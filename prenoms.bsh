@@ -28,17 +28,6 @@ LANG="C"
 #===============================================================================
 
 
-
-
-
-#===  FUNCTION  ================================================================
-#          NAME: initialization
-#   DESCRIPTION: 
-#    PARAMETERS: void
-#       RETURNS: void
-#===============================================================================
-
-
 USAGE="./prenoms.bsh\n 
 \t -i \t\t\t\t\t\t Initialisation\n
 \t -c \t\t\t\t\t\t Effacement de la campagne précédente\n
@@ -53,10 +42,18 @@ ARGS_ERROR=-4;
 WEB_SITES_FILE=".inti.txt";
 CAMPAINGN_FILE=".campaign.txt";
 
+
+#===  FUNCTION  ================================================================
+#          NAME: initialization
+#   DESCRIPTION: 
+#    PARAMETERS: void
+#       RETURNS: void
+#===============================================================================
+
 initialization() {
 
 	if [[ -e $WEB_SITES_FILE ]]; then
-		qrm -f $WEB_SITES_FILE;
+		rm -f $WEB_SITES_FILE;
 	fi
 
 	touch $WEB_SITES_FILE;
@@ -69,6 +66,54 @@ initialization() {
 }
 
 
+#===  FUNCTION  ================================================================
+#          NAME: getAllSiteName
+#   DESCRIPTION: 
+#    PARAMETERS: 
+#       RETURNS: string
+#===============================================================================
+
+getAllSiteName() {
+	if [[ ! -e $WEB_SITES_FILE ]]; then
+		echo "Initialisation file is not create" >&2;
+		return;
+	fi
+
+	string="";
+	for line in $(cat $WEB_SITES_FILE); do
+		tpm=${line#*//};
+		tpm=${tpm%/*};
+		tpm=${tpm#*.};
+		string="$string ${tpm%.*}";
+	done
+
+	echo $string;
+}
+
+#===  FUNCTION  ================================================================
+#          NAME: checkArgsCampaign
+#   DESCRIPTION:
+#    PARAMETERS: site lettre genre debut fin
+#       RETURNS: format line or void string
+#===============================================================================
+
+checkArgsCampaign() {
+	if [[ $# -ne  5 ]]; then
+		return;
+	fi
+
+	listNameSite=$(getAllSiteName);
+
+	if [[ $listNameSite == "" ]]; then
+		return;
+	fi
+
+	echo $listNameSite;
+
+	# Genre : Le genre du prénom soit garcon (pas de cédille) ou fille soit boy ou girl. -1
+	
+}
+
 
 #===  FUNCTION  ================================================================
 #          NAME: campaign
@@ -79,31 +124,47 @@ initialization() {
 
 campaign() {
 
-	if [[ $1 = "-c" ]]; then
+	if [[ $1 == "-c" ]]; then
 		if [[ $# -ne 1 ]]; then
 			return $ARGS_ERROR;
 		fi
 
 		if [[ -e $CAMPAINGN_FILE ]]; then
-			rm -f CAMPAINGN_FILE;
+			rm -f $CAMPAINGN_FILE;
 		else
 			return -2;
 		fi
 
-		
-
+		return 0;
 	fi
 
+
+	if [[ $1 == "-a" ]]; then
+
+		if [[ $# -ne 6 ]]; then
+			return $ARGS_ERROR;
+		fi
+
+		string="";
+		for (( i = 2; i <= $#; i++ )); do
+			string="$string ${!i}";
+		done
+
+		echo $string >> $CAMPAINGN_FILE;
+
+		return 0;
+	fi
 
 	return $ARGS_ERROR;
 }
 
-echo -e $USAGE;
+#echo -e $USAGE;
 
-echo "Vous n'avez pas de campagne !" >&2;
+#echo "Vous n'avez pas de campagne !" >&2;
 
-campaign -c;
-
+#campaign -a tutu titiit;
+campaign -a liste Q boy 1 -;
 
 #OEF
 
+ checkArgsCampaign rfhurb rufureb berufb erfubb rfbu
