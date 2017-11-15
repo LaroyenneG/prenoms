@@ -44,6 +44,18 @@ CAMPAINGN_FILE=".campaign.txt";
 
 
 #===  FUNCTION  ================================================================
+#          NAME: 
+#   DESCRIPTION: 
+#    PARAMETERS: 
+#       RETURNS: 
+#===============================================================================
+
+isNumeric() {
+	echo $1 | grep "^[ [:digit:] ]*$";
+}
+
+
+#===  FUNCTION  ================================================================
 #          NAME: initialization
 #   DESCRIPTION: 
 #    PARAMETERS: void
@@ -75,7 +87,7 @@ initialization() {
 
 getAllSiteName() {
 	if [[ ! -e $WEB_SITES_FILE ]]; then
-		echo "Initialisation file is not create" >&2;
+		echo "File $WEB_SITES_FILE is not create" >&2;
 		return;
 	fi
 
@@ -98,20 +110,34 @@ getAllSiteName() {
 #===============================================================================
 
 checkArgsCampaign() {
+	
 	if [[ $# -ne  5 ]]; then
 		return;
 	fi
 
 	listNameSite=$(getAllSiteName);
 
-	if [[ $listNameSite == "" ]]; then
-		return;
+	if [[ $listNameSite = "" ]]; then
+		echo "error";	
 	fi
+
+	site=$1;
+	id=-1;
+	for name in $listNameSite; do
+		
+		result=$(grep "$site" <<< "$name");
+
+		if [[ $result = $name ]]; then
+			id=i;
+		fi
+	done
+
+
 
 	echo $listNameSite;
 
 	# Genre : Le genre du prénom soit garcon (pas de cédille) ou fille soit boy ou girl. -1
-	
+
 }
 
 
@@ -124,7 +150,7 @@ checkArgsCampaign() {
 
 campaign() {
 
-	if [[ $1 == "-c" ]]; then
+	if [[ $1 = "-c" ]]; then
 		if [[ $# -ne 1 ]]; then
 			return $ARGS_ERROR;
 		fi
@@ -139,7 +165,7 @@ campaign() {
 	fi
 
 
-	if [[ $1 == "-a" ]]; then
+	if [[ $1 = "-a" ]]; then
 
 		if [[ $# -ne 6 ]]; then
 			return $ARGS_ERROR;
@@ -161,10 +187,7 @@ campaign() {
 #echo -e $USAGE;
 
 #echo "Vous n'avez pas de campagne !" >&2;
+initialization
+checkArgsCampaign j ejiej erirjei riej reninre
 
-#campaign -a tutu titiit;
-campaign -a liste Q boy 1 -;
-
-#OEF
-
- checkArgsCampaign rfhurb rufureb berufb erfubb rfbu
+isNumeric n
