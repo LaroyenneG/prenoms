@@ -28,7 +28,7 @@ LANG="C"
 #===============================================================================
 
 
-USAGE="./prenoms.bsh\n 
+HELP="./prenoms.bsh\n 
 \t -i \t\t\t\t\t\t Initialisation\n
 \t -c \t\t\t\t\t\t Effacement de la campagne précédente\n
 \t -a <site> <lettre> <genre> <debut> <fin> \t Ajout d’une nouvelle règle dans la campagne\n
@@ -36,8 +36,10 @@ USAGE="./prenoms.bsh\n
 \t -e \t\t\t\t\t\t Extraction des prénoms et filtrages éventuels de tous les téléchargements\n
 \t -m <fihier> \t\t\t\t\t Fusion de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.\n";
 
+USAGE="prenoms.bsh [OPTION] ... \n";
 
-ARGS_ERROR=-4;
+ARGS_ERROR=-6;
+INIT_ERROR=-7;
 
 WEB_SITES_FILE=".inti.txt";
 CAMPAINGN_FILE=".campaign.txt";
@@ -53,6 +55,18 @@ CAMPAINGN_FILE=".campaign.txt";
 isNumeric() {
 	echo $1 | grep "^[ [:digit:] ]*$";
 }
+
+
+#===  FUNCTION  ================================================================
+#          NAME: minuscule
+#   DESCRIPTION: 
+#    PARAMETERS: letter
+#       RETURNS: letter
+#===============================================================================
+minuscule() {
+	echo $1 | tr [:upper:] [:lower:];
+}
+
 
 
 #===  FUNCTION  ================================================================
@@ -117,77 +131,144 @@ checkArgsCampaign() {
 
 	listNameSite=$(getAllSiteName);
 
-	if [[ $listNameSite = "" ]]; then
-		echo "error";	
+	if [[ "$listNameSite" = "" ]]; then
+		echo "Le programme n'est pas inisialisé !" >&2;
+		return $INIT_ERROR;	
 	fi
 
+	#================= site ====================
 	site=$1;
-	id=-1;
-	for name in $listNameSite; do
-		
-		result=$(grep "$site" <<< "$name");
 
-		if [[ $result = $name ]]; then
-			id=i;
+	if [[ "$(isNumeric site)" = "$site" ]]; then
+		#verifier que 0<n<=len
+		echo "tutu";
+	else
+		id=-1;
+
+		for name in $listNameSite; do
+			result=$(grep "$site" <<< "$name");
+			if [[ "$result" = "$name" ]]; then
+				id=i;
+			fi
+		done
+
+		if [[ "$id" -lt "-1" ]]; then
+			site=`expr $id + 1`;
+		else
+			return -1;
 		fi
-	done
+	fi
+
+	#================ lettre ====================
+	lettre=$2;
+
+	if [[ "$lettre" = [a-z] ]]; then
+		lettre=$(minuscule $lettre);
+	else
+		return -2;	
+	fi
+
+	#================ genre =====================
+	genre=$3;
+
+	if [ "$genre" = "garcon" ] || [ "$genre" = "boy" ]; then
+		genre=1;
+	fi
+
+	if [ "$genre" = "fille" ] || [ "$genre" = "girl" ]; then
+		genre=0;
+	fi
+
+	if [ ! "$genre" = "1" ] && [ ! "$genre" = "0" ]; then
+		return -3;
+	fi
 
 
+	#================== debut fin ==================
+	debut=$3;
+	fin=$4;
+	
+	if [ ! $(isNumeric $debut) = "$debut" ]; then
+		if [ ! "$debut" = "no" ] && [! "$debut" = "no" ]; then
+			return -4;
+		fi
 
-	echo $listNameSite;
+		debut="0";
+	fi
 
-	# Genre : Le genre du prénom soit garcon (pas de cédille) ou fille soit boy ou girl. -1
+	if [ ! $(isNumeric $fin) = "$fin" ]; then
+		if [ ! "$fin" = "no" ] && [! "$fin" = "no" ]; then
+			return -4;
+		fi
 
+		fin="-";
+	fi
+
+	if [[ "$debut" -lt "0" ]]; then
+		return -4;
+	fi
+
+	if [ ! "$fin" = "-" ] && [! "$fin" -ge "$debut" ]; then
+		return -4;
+	fi
+
+	line="$site $lettre $genre $debut $fin";
+	echo $line;
 }
 
 
 #===  FUNCTION  ================================================================
-#          NAME: campaign
+#          NAME: addCampaign
 #   DESCRIPTION:
-#    PARAMETERS: -c, -a site lettre genre debut fin
+#    PARAMETERS: site lettre genre debut fin
+#       RETURNS: status (integer)
+#=====66==========================================================================
+
+addCampaign() {
+
+	if [[ $# -ne 5 ]]; then
+		return $ARGS_ERROR;
+	fi
+
+	string="";
+	for (( i = 2; i <= $#; i++ )); do
+		string="$string ${!i}";
+	done
+
+	echo $string >> $CAMPAINGN_FILE;
+
+	return 0;
+}
+
+
+#===  FUNCTION  ================================================================
+#          NAME: deleteCampaign
+#   DESCRIPTION:
+#    PARAMETERS: void
 #       RETURNS: status (integer)
 #===============================================================================
 
-campaign() {
+deleteCampaign() {
 
-	if [[ $1 = "-c" ]]; then
-		if [[ $# -ne 1 ]]; then
-			return $ARGS_ERROR;
-		fi
-
-		if [[ -e $CAMPAINGN_FILE ]]; then
-			rm -f $CAMPAINGN_FILE;
-		else
-			return -2;
-		fi
-
-		return 0;
+	if [[ $# -ne 0 ]]; then
+		return $ARGS_ERROR;
 	fi
 
-
-	if [[ $1 = "-a" ]]; then
-
-		if [[ $# -ne 6 ]]; then
-			return $ARGS_ERROR;
-		fi
-
-		string="";
-		for (( i = 2; i <= $#; i++ )); do
-			string="$string ${!i}";
-		done
-
-		echo $string >> $CAMPAINGN_FILE;
-
-		return 0;
+	if [[ -e $CAMPAINGN_FILE ]]; then
+		rm -f $CAMPAINGN_FILE;		
+	else
+		return -2;
 	fi
 
-	return $ARGS_ERROR;
+	return 0;
 }
 
 #echo -e $USAGE;
 
-#echo "Vous n'avez pas de campagne !" >&2;
-initialization
-checkArgsCampaign j ejiej erirjei riej reninre
-
-isNumeric n
+# 3
+# La convergence sera d'ordre 2 si 
+# g'(a)=0 et g''(a)!=0
+# 4
+# La convergence sera d'ordre 3 si 
+# g'(a)=g''(a)=0 et g'''(a)!=0
+# p 14
