@@ -38,18 +38,18 @@ HELP="./prenoms.bsh\n
 
 USAGE="prenoms.bsh [OPTION] ... \n";
 
-ARGS_ERROR=-6;
-INIT_ERROR=-7;
+ARGS_ERROR=-64;
+INIT_ERROR=-77;
 
 WEB_SITES_FILE=".inti.txt";
 CAMPAINGN_FILE=".campaign.txt";
 
 
 #===  FUNCTION  ================================================================
-#          NAME: 
+#          NAME: isNumeric
 #   DESCRIPTION: 
-#    PARAMETERS: 
-#       RETURNS: 
+#    PARAMETERS: number
+#       RETURNS: number
 #===============================================================================
 
 isNumeric() {
@@ -58,10 +58,10 @@ isNumeric() {
 
 
 #===  FUNCTION  ================================================================
-#          NAME: 
+#          NAME: isCharacter
 #   DESCRIPTION: 
-#    PARAMETERS: 
-#       RETURNS: 
+#    PARAMETERS: letter
+#       RETURNS: letter
 #===============================================================================
 
 isCharacter() {
@@ -75,6 +75,9 @@ isCharacter() {
 		return;
 	fi
 }
+
+
+
 
 #===  FUNCTION  ================================================================
 #          NAME: minuscule
@@ -115,7 +118,7 @@ initialization() {
 #===  FUNCTION  ================================================================
 #          NAME: getAllSiteName
 #   DESCRIPTION: 
-#    PARAMETERS: 
+#    PARAMETERS: void
 #       RETURNS: string
 #===============================================================================
 
@@ -262,7 +265,7 @@ checkArgsCampaign() {
 #   DESCRIPTION:
 #    PARAMETERS: site lettre genre debut fin
 #       RETURNS: status (integer)
-#=====66==========================================================================
+#===============================================================================
 
 addCampaign() {
 
@@ -305,6 +308,51 @@ deleteCampaign() {
 	return 0;
 }
 
+
+#===  FUNCTION  ================================================================
+#          NAME: downloadSite
+#   DESCRIPTION:
+#    PARAMETERS: 
+#       RETURNS: 
+#===============================================================================
+
+downloadSite() {
+	case $1 in
+		1) echo "site 1";
+			;;
+		2) echo "site 2";
+			;;
+		3) echo "site 3";
+			;;
+		4) echo "site 4";
+			;;
+		5) echo "site 5";
+			;;
+		6) echo "site 6";
+			;;
+		7) echo "site 7";
+			;;
+		8) echo "site 8";
+			;;
+		*) echo "-1";
+	esac
+}
+
+
+#===  FUNCTION  ================================================================
+#          NAME: main
+#   DESCRIPTION:
+#    PARAMETERS: args
+#       RETURNS: status (integer)
+#===============================================================================
+
+main() {
+	echo "main";
+}
+
+
+
+
 #echo -e $USAGE;
 
 # 3
@@ -316,3 +364,8 @@ deleteCampaign() {
 # p 14
 
 # Test de la fonction checkArgsCampaign
+
+
+
+
+
