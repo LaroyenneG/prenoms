@@ -1,0 +1,8 @@
+http://prenoms.aujourdhui.com/guide/commencant-par-%letter%.asp
+http://www.mamanpourlavie.com/prenoms/lettre/%letter%/%gender%
+http://www.bebepassion.com/prenoms/prenom-%gender%-%letter%.htm
+https://www.prenoms.com/prenom/recherche.html?advanced=True&Genre=%gender%&start_with=%letter%&page=%page%
+http://nominis.cef.fr/contenus/prenom/alphabetique/%letter%-%page%.html
+http://www.quelprenom.com/liste_prenoms.php?code=FR&sexe%5B0%5D=%gender%&start=%letter%&page=%page%
+http://www.magicmaman.com/prenom/recherche/commencantpar=%letter%#?commencantpar=%letter%&frai&sexe=%gender%&page=%page%
+https://www.naissance.fr/prenoms/recherche?gender=%gender%&begin=%letter%&page=%page%

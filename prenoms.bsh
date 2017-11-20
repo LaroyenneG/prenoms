@@ -58,11 +58,31 @@ isNumeric() {
 
 
 #===  FUNCTION  ================================================================
+#          NAME: 
+#   DESCRIPTION: 
+#    PARAMETERS: 
+#       RETURNS: 
+#===============================================================================
+
+isCharacter() {
+	if [[ "$1" = [a-z] ]]; then
+		echo "$1";
+		return;
+	fi
+
+	if [[ "$1" = [A-Z] ]]; then
+		echo "$1";
+		return;
+	fi
+}
+
+#===  FUNCTION  ================================================================
 #          NAME: minuscule
 #   DESCRIPTION: 
 #    PARAMETERS: letter
 #       RETURNS: letter
 #===============================================================================
+
 minuscule() {
 	echo $1 | tr [:upper:] [:lower:];
 }
@@ -124,8 +144,9 @@ getAllSiteName() {
 #===============================================================================
 
 checkArgsCampaign() {
-	
+
 	if [[ $# -ne  5 ]]; then
+		echo "$ARGS_ERROR";
 		return;
 	fi
 
@@ -133,15 +154,22 @@ checkArgsCampaign() {
 
 	if [[ "$listNameSite" = "" ]]; then
 		echo "Le programme n'est pas inisialisé !" >&2;
-		return $INIT_ERROR;	
+		echo "$INIT_ERROR";
+		return;	
 	fi
 
 	#================= site ====================
 	site=$1;
 
-	if [[ "$(isNumeric site)" = "$site" ]]; then
-		#verifier que 0<n<=len
-		echo "tutu";
+	if [[ "$(isNumeric $site)" = "$site" ]]; then
+
+		nbLine=$(cat $WEB_SITES_FILE | wc -l);
+
+		if [ "$site" -lt "0" ] || [ "$site" -ge "$nbLine" ]; then
+			echo "-1";
+			return;
+		fi
+
 	else
 		id=-1;
 
@@ -155,17 +183,19 @@ checkArgsCampaign() {
 		if [[ "$id" -lt "-1" ]]; then
 			site=`expr $id + 1`;
 		else
-			return -1;
+			echo "-1";
+			return;
 		fi
 	fi
 
 	#================ lettre ====================
 	lettre=$2;
 
-	if [[ "$lettre" = [a-z] ]]; then
+	if [[ "$lettre" = $(isCharacter $lettre) ]]; then
 		lettre=$(minuscule $lettre);
 	else
-		return -2;	
+		echo "-2";
+		return;	
 	fi
 
 	#================ genre =====================
@@ -180,36 +210,41 @@ checkArgsCampaign() {
 	fi
 
 	if [ ! "$genre" = "1" ] && [ ! "$genre" = "0" ]; then
-		return -3;
+		echo "-3";
+		return;
 	fi
 
 
 	#================== debut fin ==================
-	debut=$3;
-	fin=$4;
+	debut=$4;
+	fin=$5;
 	
-	if [ ! $(isNumeric $debut) = "$debut" ]; then
-		if [ ! "$debut" = "no" ] && [! "$debut" = "no" ]; then
-			return -4;
+	if [[ ! $(isNumeric $debut) = "$debut" ]]; then
+		if [ ! "$debut" = "no" ] && [ ! "$debut" = "-" ]; then
+			echo "-4";
+			return;
 		fi
 
-		debut="0";
+		debut="-";
 	fi
 
-	if [ ! $(isNumeric $fin) = "$fin" ]; then
-		if [ ! "$fin" = "no" ] && [! "$fin" = "no" ]; then
-			return -4;
+	if [[ ! $(isNumeric $fin) = "$fin" ]]; then
+		if [ ! "$fin" = "no" ] && [ ! "$fin" = "-" ]; then
+			echo "-4";
+			return;
 		fi
 
 		fin="-";
 	fi
 
-	if [[ "$debut" -lt "0" ]]; then
-		return -4;
+	if [ ! "$debut" = "-" ] && [ "$debut" -lt "0" ]; then
+		echo "-4";
+		return;
 	fi
 
-	if [ ! "$fin" = "-" ] && [! "$fin" -ge "$debut" ]; then
-		return -4;
+	if [ ! "$fin" = "-" ] && [ ! "$debut" = "-" ] && [ ! "$fin" -ge "$debut" ]; then
+		echo "-4";
+		return;
 	fi
 
 	line="$site $lettre $genre $debut $fin";
@@ -227,7 +262,8 @@ checkArgsCampaign() {
 addCampaign() {
 
 	if [[ $# -ne 5 ]]; then
-		return $ARGS_ERROR;
+		echo "$ARGS_ERROR";
+		return;
 	fi
 
 	string="";
@@ -237,7 +273,8 @@ addCampaign() {
 
 	echo $string >> $CAMPAINGN_FILE;
 
-	return 0;
+	echo "";
+	return;
 }
 
 
@@ -272,3 +309,8 @@ deleteCampaign() {
 # La convergence sera d'ordre 3 si 
 # g'(a)=g''(a)=0 et g'''(a)!=0
 # p 14
+
+# Test de la fonction checkArgsCampaign
+initialization
+checkArgsCampaign 1 a garcon no 2;
+
