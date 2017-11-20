@@ -172,18 +172,23 @@ checkArgsCampaign() {
 
 	else
 		id=-1;
+		count=0;
+		i=0;
 
 		for name in $listNameSite; do
+
 			result=$(grep "$site" <<< "$name");
 			if [[ "$result" = "$name" ]]; then
-				id=i;
+				id=$i;
+				count=$(expr $count + 1);
 			fi
+			i=$(expr $i + 1);
 		done
 
-		if [[ "$id" -lt "-1" ]]; then
-			site=`expr $id + 1`;
+		if [ "$id" -gt "-1" ] && [ "$count" -eq "1" ]; then
+			site=$(expr $id + 1);
 		else
-			echo "-1";
+			echo "-2";
 			return;
 		fi
 	fi
@@ -194,7 +199,7 @@ checkArgsCampaign() {
 	if [[ "$lettre" = $(isCharacter $lettre) ]]; then
 		lettre=$(minuscule $lettre);
 	else
-		echo "-2";
+		echo "-3";
 		return;	
 	fi
 
@@ -210,7 +215,7 @@ checkArgsCampaign() {
 	fi
 
 	if [ ! "$genre" = "1" ] && [ ! "$genre" = "0" ]; then
-		echo "-3";
+		echo "-4";
 		return;
 	fi
 
@@ -221,7 +226,7 @@ checkArgsCampaign() {
 	
 	if [[ ! $(isNumeric $debut) = "$debut" ]]; then
 		if [ ! "$debut" = "no" ] && [ ! "$debut" = "-" ]; then
-			echo "-4";
+			echo "-5";
 			return;
 		fi
 
@@ -230,7 +235,7 @@ checkArgsCampaign() {
 
 	if [[ ! $(isNumeric $fin) = "$fin" ]]; then
 		if [ ! "$fin" = "no" ] && [ ! "$fin" = "-" ]; then
-			echo "-4";
+			echo "-5";
 			return;
 		fi
 
@@ -238,12 +243,12 @@ checkArgsCampaign() {
 	fi
 
 	if [ ! "$debut" = "-" ] && [ "$debut" -lt "0" ]; then
-		echo "-4";
+		echo "-6";
 		return;
 	fi
 
 	if [ ! "$fin" = "-" ] && [ ! "$debut" = "-" ] && [ ! "$fin" -ge "$debut" ]; then
-		echo "-4";
+		echo "-6";
 		return;
 	fi
 
@@ -311,6 +316,3 @@ deleteCampaign() {
 # p 14
 
 # Test de la fonction checkArgsCampaign
-initialization
-checkArgsCampaign 1 a garcon no 2;
-
