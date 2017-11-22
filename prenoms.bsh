@@ -55,6 +55,12 @@ DOWN_EXT=".html";
 #===============================================================================
 
 function isNumeric() {
+	
+	if [[ "$#" -ne "1" ]]; then
+		echo "";
+		return;
+	fi
+
 	echo $1 | grep "^[ [:digit:] ]*$";
 }
 
@@ -67,6 +73,12 @@ function isNumeric() {
 #===============================================================================
 
 function isCharacter() {
+
+	if [[ "$#" -ne "1" ]]; then
+		echo "";
+		return;
+	fi
+
 	if [[ "$1" = [a-z] ]]; then
 		echo "$1";
 		return;
@@ -77,7 +89,6 @@ function isCharacter() {
 		return;
 	fi
 }
-
 
 
 
@@ -103,11 +114,11 @@ function minuscule() {
 
 function initialization() {
 
-	if [[ -e $WEB_SITES_FILE ]]; then
-		rm -f $WEB_SITES_FILE;
+	if [[ -e "$WEB_SITES_FILE" ]]; then
+		rm -f "$WEB_SITES_FILE";
 	fi
 
-	touch $WEB_SITES_FILE;
+	touch "$WEB_SITES_FILE";
 
 	list="http://prenoms.aujourdhui.com/guide/commencant-par-%letter%.asp http://www.mamanpourlavie.com/prenoms/lettre/%letter%/%gender% http://www.bebepassion.com/prenoms/prenom-%gender%-%letter%.htm https://www.prenoms.com/prenom/recherche.html?advanced=True&Genre=%gender%&start_with=%letter%&page=%page% http://nominis.cef.fr/contenus/prenom/alphabetique/%letter%-%page%.html http://www.quelprenom.com/liste_prenoms.php?code=FR&sexe%5B0%5D=%gender%&start=%letter%&page=%page% http://www.magicmaman.com/prenom/recherche/commencantpar=%letter%#?commencantpar=%letter%&frai&sexe=%gender%&page=%page% https://www.naissance.fr/prenoms/recherche?gender=%gender%&begin=%letter%&page=%page%"
 
@@ -125,13 +136,13 @@ function initialization() {
 #===============================================================================
 
 function getAllSiteName() {
-	if [[ ! -e $WEB_SITES_FILE ]]; then
+	if [[ ! -e "$WEB_SITES_FILE" ]]; then
 		echo "File $WEB_SITES_FILE is not create" >&2;
 		return;
 	fi
 
 	string="";
-	for line in $(cat $WEB_SITES_FILE); do
+	for line in $(cat "$WEB_SITES_FILE"); do
 		tpm=${line#*//};
 		tpm=${tpm%/*};
 		tpm=${tpm#*.};
@@ -150,7 +161,7 @@ function getAllSiteName() {
 
 function checkArgsCampaign() {
 
-	if [[ $# -ne  5 ]]; then
+	if [[ "$#" -ne  "5" ]]; then
 		echo "$ARGS_ERROR";
 		return;
 	fi
@@ -158,7 +169,7 @@ function checkArgsCampaign() {
 	listNameSite=$(getAllSiteName);
 
 	if [[ "$listNameSite" = "" ]]; then
-		echo "Le programme n'est pas inisialisé !" >&2;
+		echo "File $WEB_SITES_FILE is not create" >&2;
 		echo "$INIT_ERROR";
 		return;	
 	fi
@@ -168,7 +179,7 @@ function checkArgsCampaign() {
 
 	if [[ "$(isNumeric $site)" = "$site" ]]; then
 
-		nbLine=$(cat $WEB_SITES_FILE | wc -l);
+		nbLine=$(cat "$WEB_SITES_FILE" | wc -l);
 
 		if [ "$site" -lt "0" ] || [ "$site" -ge "$nbLine" ]; then
 			echo "-1";
@@ -202,7 +213,7 @@ function checkArgsCampaign() {
 	lettre=$2;
 
 	if [[ "$lettre" = $(isCharacter $lettre) ]]; then
-		lettre=$(minuscule $lettre);
+		lettre=$(minuscule "$lettre");
 	else
 		echo "-3";
 		return;	
@@ -271,7 +282,7 @@ function checkArgsCampaign() {
 
 function addCampaign() {
 
-	if [[ $# -ne 5 ]]; then
+	if [[ "$#" -ne "5" ]]; then
 		echo "$ARGS_ERROR";
 		return;
 	fi
@@ -297,12 +308,12 @@ function addCampaign() {
 
 function deleteCampaign() {
 
-	if [[ $# -ne 0 ]]; then
-		return $ARGS_ERROR;
+	if [[ "$#" -ne "0" ]]; then
+		return "$ARGS_ERROR";
 	fi
 
-	if [[ -e $CAMPAINGN_FILE ]]; then
-		rm -f $CAMPAINGN_FILE;		
+	if [[ -e "$CAMPAINGN_FILE" ]]; then
+		rm -f "$CAMPAINGN_FILE";		
 	else
 		echo "1";
 		return;
@@ -356,7 +367,7 @@ function download() {
 
 function downloadSite() {
 
-	if [[ ! -e $WEB_SITES_FILE ]]; then
+	if [[ ! -e "$WEB_SITES_FILE" ]]; then
 		echo "$INIT_ERROR";
 		return;	
 	fi
@@ -372,7 +383,7 @@ function downloadSite() {
 	debut=$4;
 	fin=$5;
 
-	url=$(sed -n $site'p' $WEB_SITES_FILE);
+	url=$(sed -n "$site"'p' "$WEB_SITES_FILE");
 
 
 
@@ -411,8 +422,6 @@ function main() {
 	echo "main";
 }
 
-
-download "www.google.fr" "titi";
 
 #echo -e $USAGE;
 
