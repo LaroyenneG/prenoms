@@ -146,7 +146,6 @@ function getAllSiteName() {
 	fi
 
 	if [[ ! -e "$WEB_SITES_FILE" ]]; then
-		echo "File $WEB_SITES_FILE is not create" >&2;
 		return;
 	fi
 
@@ -178,7 +177,6 @@ function checkArgsCampaign() {
 	listNameSite=$(getAllSiteName);
 
 	if [[ "$listNameSite" = "" ]]; then
-		echo "File $WEB_SITES_FILE is not create" >&2;
 		echo "$INIT_ERROR";
 		return;	
 	fi
@@ -190,9 +188,8 @@ function checkArgsCampaign() {
 
 		nbLine=$(cat "$WEB_SITES_FILE" | wc -l);
 
-		if [ "$site" -lt "0" ] || [ "$site" -ge "$nbLine" ]; then
+		if [ "$site" -lt "1" ] || [ "$site" -gt "$nbLine" ]; then
 			echo "-1";
-			return;
 		fi
 
 	else
@@ -201,7 +198,6 @@ function checkArgsCampaign() {
 		i=0;
 
 		for name in $listNameSite; do
-			echo $site $name;
 			result=$(grep "$site" <<< "$name");
 			if [[ "$result" = "$name" ]]; then
 				id=$i;
@@ -214,7 +210,6 @@ function checkArgsCampaign() {
 			site=$(expr $id + 1);
 		else
 			echo "-2";
-			return;
 		fi
 	fi
 
@@ -225,7 +220,6 @@ function checkArgsCampaign() {
 		lettre=$(minuscule "$lettre");
 	else
 		echo "-3";
-		return;	
 	fi
 
 	#================ genre =====================
@@ -241,7 +235,6 @@ function checkArgsCampaign() {
 
 	if [ ! "$genre" = "1" ] && [ ! "$genre" = "0" ]; then
 		echo "-4";
-		return;
 	fi
 
 
@@ -260,7 +253,7 @@ function checkArgsCampaign() {
 
 	if [[ ! $(isNumeric $fin) = "$fin" ]]; then
 		if [ ! "$fin" = "no" ] && [ ! "$fin" = "-" ]; then
-			echo "-5";
+			echo "-6";
 			return;
 		fi
 
@@ -268,7 +261,7 @@ function checkArgsCampaign() {
 	fi
 
 	if [ ! "$debut" = "-" ] && [ "$debut" -lt "0" ]; then
-		echo "-6";
+		echo "-5";
 		return;
 	fi
 
@@ -280,6 +273,51 @@ function checkArgsCampaign() {
 	line="$site $lettre $genre $debut $fin";
 	echo $line;
 }
+
+
+
+#===  FUNCTION  ================================================================
+#          NAME: printCampaignErrors
+#   DESCRIPTION:
+#    PARAMETERS: errors
+#       RETURNS: void
+#===============================================================================
+
+function printCampaignErrors() {
+	
+	if [[ "$#" -ne "1" ]]; then
+		return;
+	fi
+
+	if [[ "$1" = "$INIT_ERROR" ]]; then
+		echo "Vous n'avez pas initialisé le programme";
+		return;
+	fi
+
+	lines=$1;
+
+	echo "Il y a des paramètres invalide dans la campagne :";
+
+	for line in $lines; do
+		case $line in
+		"-1")			echo -e "\t- Le numéro du site est invalide";
+			;;
+		"-2")			echo -e "\t- Le nom du site est invalide";
+			;;
+		"-3")			echo -e "\t- Le paramètre lettre est invalide";
+			;;
+		"-4")			echo -e "\t- Le paramètres genre est invalide";
+			;;
+		"-5")			echo -e "\t- Le paramètre debut est invalide";
+			;;
+		"-6")			echo -e "\t- Le paramètre fin est invalide";
+			;;
+		*)		echo "Invalid value" >&2;
+			;;
+		esac
+	done
+}
+
 
 
 #===  FUNCTION  ================================================================
@@ -301,7 +339,7 @@ function addCampaign() {
 		string="$string ${!i}";
 	done
 
-	echo $string >> $CAMPAINGN_FILE;
+	echo "$string" >> "$CAMPAINGN_FILE";
 
 	echo "0";
 }
@@ -440,16 +478,19 @@ function main() {
 	"-c") 		deleteCampaign;
 		;;
 	"-a") 		line=$(checkArgsCampaign $2 $3 $4 $5 $6);
-				
-				if [[ "$(isNumeric $line)" = "$line" ]]; then
-					if [[ "$(addCampaign $line)" -eq "$ARGS_ERROR" ]]; then
-						echo "ANOMALY" >&2;
+				for n in $line; do
+					if [ "-$(isNumeric ${n#-})" = "$n" ] && [ "$n" -lt "0" ]; then
+						printCampaignErrors "$line";
 						exit;
 					fi
-				else
-					echo "error";
-				fi
+				done
 
+				status=$(addCampaign $line);
+				if [[ "$status" -eq "$ARGS_ERROR" ]]; then
+					echo "ANOMALY" >&2;
+					exit;
+				fi
+				
 				shift 5;
 		;;
 	"-m")		echo -e "-m Option non géré";
@@ -471,7 +512,6 @@ fi
 
 main $*;
 
-#echo -e $USAGE;
 
 # 3
 # La convergence sera d'ordre 2 si 
@@ -481,9 +521,7 @@ main $*;
 # g'(a)=g''(a)=0 et g'''(a)!=0
 # p 14
 
+# Démonstration page 16 erreur de coidrature
+
 # Test de la fonction checkArgsCampaign
-
-
-
-
 
