@@ -327,16 +327,18 @@ function download() {
 		return;
 	fi
 
+	file_path="$DOWNLOAD_REP/$2$DOWN_EXT";
+
 	if [[ ! -d "$DOWNLOAD_REP/" ]]; then
 		mkdir "$DOWNLOAD_REP";
-	elif [[ -e "$DOWNLOAD_REP/$2$DOWN_EXT" ]]; then
+	elif [[ -e "$file_path" ]]; then
 		echo "1";
 		return;
 	fi
 
-	curl "$1" > "$DOWNLOAD_REP/$2$DOWN_EXT";
+	curl -o "$file_path" "$1" 2>/dev/null;
 
-	if [[ ! -e "DOWNLOAD_REP/$2$DOWN_EXT" ]]; then
+	if [[ ! -e "$file_path" ]]; then
 		echo "-1";
 		return;
 	fi
