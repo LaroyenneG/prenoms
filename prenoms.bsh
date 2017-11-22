@@ -34,9 +34,9 @@ HELP="./prenoms.bsh\n
 \t -a <site> <lettre> <genre> <debut> <fin> \t Ajout d’une nouvelle règle dans la campagne\n
 \t -d \t\t\t\t\t\t Téléchargement des fichiers décrits par toutes les règles de la campagne\n
 \t -e \t\t\t\t\t\t Extraction des prénoms et filtrages éventuels de tous les téléchargements\n
-\t -m <fihier> \t\t\t\t\t Fusion de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.\n";
+\t -m <fihier> \t\t\t\t\t Fusion de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.";
 
-USAGE="prenoms.bsh [OPTION] ... \n";
+USAGE="Usage : ./prenoms.bsh [OPTION] ...";
 
 ARGS_ERROR=-64;
 INIT_ERROR=-77;
@@ -114,6 +114,10 @@ function minuscule() {
 
 function initialization() {
 
+	if [[ "$#" -ne "0" ]]; then
+		return "$ARGS_ERROR";
+	fi
+
 	if [[ -e "$WEB_SITES_FILE" ]]; then
 		rm -f "$WEB_SITES_FILE";
 	fi
@@ -136,6 +140,11 @@ function initialization() {
 #===============================================================================
 
 function getAllSiteName() {
+
+	if [[ "$#" -ne "0" ]]; then
+		return "$ARGS_ERROR";
+	fi
+
 	if [[ ! -e "$WEB_SITES_FILE" ]]; then
 		echo "File $WEB_SITES_FILE is not create" >&2;
 		return;
@@ -161,7 +170,7 @@ function getAllSiteName() {
 
 function checkArgsCampaign() {
 
-	if [[ "$#" -ne  "5" ]]; then
+	if [[ "$#" -lt  "5" ]]; then
 		echo "$ARGS_ERROR";
 		return;
 	fi
@@ -192,7 +201,7 @@ function checkArgsCampaign() {
 		i=0;
 
 		for name in $listNameSite; do
-
+			echo $site $name;
 			result=$(grep "$site" <<< "$name");
 			if [[ "$result" = "$name" ]]; then
 				id=$i;
@@ -288,14 +297,13 @@ function addCampaign() {
 	fi
 
 	string="";
-	for (( i = 2; i <= $#; i++ )); do
+	for (( i = 1; i <= $#; i++ )); do
 		string="$string ${!i}";
 	done
 
 	echo $string >> $CAMPAINGN_FILE;
 
-	echo "";
-	return;
+	echo "0";
 }
 
 
@@ -303,7 +311,7 @@ function addCampaign() {
 #          NAME: deleteCampaign
 #   DESCRIPTION:
 #    PARAMETERS: void
-#       RETURNS: status (integer)
+#       RETURNS: void
 #===============================================================================
 
 function deleteCampaign() {
@@ -313,14 +321,12 @@ function deleteCampaign() {
 	fi
 
 	if [[ -e "$CAMPAINGN_FILE" ]]; then
-		rm -f "$CAMPAINGN_FILE";		
-	else
-		echo "1";
-		return;
+		rm -f "$CAMPAINGN_FILE";
 	fi
 
-	echo "0";
-	return;
+	if [[ -d "$DOWNLOAD_REP/" ]]; then
+		rm -r "$DOWNLOAD_REP";
+	fi
 }
 
 
@@ -419,9 +425,51 @@ function downloadSite() {
 #===============================================================================
 
 function main() {
-	echo "main";
+
+	if [[ "$#" -lt 1 ]]; then
+		return;
+	fi
+
+	case $1 in
+	"--help" )	echo -e "$HELP";
+		;;
+	"-i") 		initialization;
+		;;
+	"-d") 		echo -e "-d Option non géré";
+		;;
+	"-c") 		deleteCampaign;
+		;;
+	"-a") 		line=$(checkArgsCampaign $2 $3 $4 $5 $6);
+				
+				if [[ "$(isNumeric $line)" = "$line" ]]; then
+					if [[ "$(addCampaign $line)" -eq "$ARGS_ERROR" ]]; then
+						echo "ANOMALY" >&2;
+						exit;
+					fi
+				else
+					echo "error";
+				fi
+
+				shift 5;
+		;;
+	"-m")		echo -e "-m Option non géré";
+		;;
+	*)			echo -e "option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
+				return;
+		;;
+	esac
+
+	shift;
+	main $*;
 }
 
+
+if [[ "$#" -lt 1 ]]; then
+	echo -e "$USAGE";
+	exit;
+fi
+
+main $*;
 
 #echo -e $USAGE;
 
