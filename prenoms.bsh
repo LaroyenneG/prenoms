@@ -245,30 +245,26 @@ function checkArgsCampaign() {
 	if [[ ! $(isNumeric $debut) = "$debut" ]]; then
 		if [ ! "$debut" = "no" ] && [ ! "$debut" = "-" ]; then
 			echo "-5";
-			return;
+		else
+			debut="-";
+			if [[ ! $(isNumeric $fin) = "$fin" ]]; then
+				if [ ! "$fin" = "no" ] && [ ! "$fin" = "-" ]; then
+					echo "-6";
+				else
+					fin="-";
+					if [ ! "$debut" = "-" ] && [ "$debut" -lt "0" ]; then
+						echo "-5";
+					else
+						if [ ! "$fin" = "-" ] && [ ! "$debut" = "-" ] && [ ! "$fin" -ge "$debut" ]; then
+							echo "-6";
+							return;
+						fi
+					fi
+				fi
+			fi
 		fi
-
-		debut="-";
 	fi
 
-	if [[ ! $(isNumeric $fin) = "$fin" ]]; then
-		if [ ! "$fin" = "no" ] && [ ! "$fin" = "-" ]; then
-			echo "-6";
-			return;
-		fi
-
-		fin="-";
-	fi
-
-	if [ ! "$debut" = "-" ] && [ "$debut" -lt "0" ]; then
-		echo "-5";
-		return;
-	fi
-
-	if [ ! "$fin" = "-" ] && [ ! "$debut" = "-" ] && [ ! "$fin" -ge "$debut" ]; then
-		echo "-6";
-		return;
-	fi
 
 	line="$site $lettre $genre $debut $fin";
 	echo $line;
