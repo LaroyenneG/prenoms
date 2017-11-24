@@ -41,9 +41,10 @@ USAGE="Usage : ./prenoms.bsh [OPTION] ...";
 ARGS_ERROR=-64;
 INIT_ERROR=-77;
 
-WEB_SITES_FILE=".inti.txt";
+WEB_SITES_FILE=".site.txt";
 CAMPAINGN_FILE=".campaign.txt";
 DOWNLOAD_REP="download";
+MOD_SITES_FILE=".mod.txt";
 
 DOWN_EXT=".html";
 
@@ -106,6 +107,20 @@ function minuscule() {
 
 
 #===  FUNCTION  ================================================================
+#          NAME: majuscule
+#   DESCRIPTION: 
+#    PARAMETERS: letter
+#       RETURNS: letter
+#===============================================================================
+
+function majuscule() {
+	echo $1 | tr [:lower:] [:upper:];
+}
+
+
+
+
+#===  FUNCTION  ================================================================
 #          NAME: initialization
 #   DESCRIPTION: 
 #    PARAMETERS: void
@@ -118,23 +133,24 @@ function initialization() {
 		return "$ARGS_ERROR";
 	fi
 
-	if [[ -e "$WEB_SITES_FILE" ]]; then
-		rm -f "$WEB_SITES_FILE";
-	fi
-
-	touch "$WEB_SITES_FILE";
-
 	{
 		echo "http://prenoms.aujourdhui.com/guide/commencant-par-%letter%.asp";
 		echo "http://www.mamanpourlavie.com/prenoms/lettre/%letter%/%gender%";
-		echo " http://www.bebepassion.com/prenoms/prenom-%gender%-%letter%.htm";
+		echo "http://www.bebepassion.com/prenoms/prenom-%gender%-%letter%.htm";
 		echo "https://www.prenoms.com/prenom/recherche.html?advanced=True&Genre=%gender%&start_with=%letter%&page=%page%";
 		echo "http://nominis.cef.fr/contenus/prenom/alphabetique/%letter%-%page%.html";
 		echo "http://www.quelprenom.com/liste_prenoms.php?code=FR&sexe%5B0%5D=%gender%&start=%letter%&page=%page%";
 		echo "http://www.magicmaman.com/prenom/recherche/commencantpar=%letter%#?commencantpar=%letter%&frai&sexe=%gender%&page=%page%";
 		echo "https://www.naissance.fr/prenoms/recherche?gender=%gender%&begin=%letter%&page=%page%";
 	} > "$WEB_SITES_FILE";
+
+
+	{
+		echo "1 - +";
+		echo "1 2 +";
+	} > "$MOD_SITES_FILE";
 }
+
 
 
 #===  FUNCTION  ================================================================
@@ -165,6 +181,8 @@ function getAllSiteName() {
 	echo $string;
 }
 
+
+
 #===  FUNCTION  ================================================================
 #          NAME: checkArgsCampaign
 #   DESCRIPTION:
@@ -183,7 +201,7 @@ function checkArgsCampaign() {
 
 	listNameSite=$(getAllSiteName);
 
-	if [[ "$listNameSite" = "" ]]; then
+	if [ "$listNameSite" = "" ] || [ ! -e "$MOD_SITES_FILE" ]; then
 		echo "$INIT_ERROR";
 		return;	
 	fi
@@ -265,6 +283,21 @@ function checkArgsCampaign() {
 		fin="-";
 	fi
 
+	if [ ! "$debut" = "-" ] && [ "$fin" = "-" ] ; then
+		fin=$debut;
+	fi
+
+	if [ ! "$fin" = "-" ] && [ "$debut" = "-" ] ; then
+		$debut=fin;
+	fi
+
+	if [[ "$debut" = "-" ]]; then
+		mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
+		if [[ ! "${mod[2]}" = "-" ]]; then
+			errors+=" -9";
+		fi
+	fi
+
 	if [ ! "$debut" = "-" ] && [ "$debut" -lt "0" ]; then
 		errors+=" -7";
 		return;
@@ -283,6 +316,8 @@ function checkArgsCampaign() {
 	line="$site $lettre $genre $debut $fin";
 	echo $line;
 }
+
+
 
 
 
@@ -332,11 +367,15 @@ function printCampaignErrors() {
 			;;
 		"-8")			echo -e "\t -Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
 			;;
+		"-9")			echo -e "\t -Le site demandé nécessite des paramétres de page";
+			;;
 		*)				echo "Invalid value : [$line]" >&2;
 			;;
 		esac
 	done
 }
+
+
 
 
 
@@ -365,6 +404,8 @@ function addCampaign() {
 }
 
 
+
+
 #===  FUNCTION  ================================================================
 #          NAME: deleteCampaign
 #   DESCRIPTION:
@@ -388,6 +429,8 @@ function deleteCampaign() {
 }
 
 
+
+
 #===  FUNCTION  ================================================================
 #          NAME: download
 #   DESCRIPTION:
@@ -398,8 +441,8 @@ function deleteCampaign() {
 function download() {
 
 	if [[ $# -ne 2 ]]; then
-		echo "$ARGS_ERROR";
-		return;
+		echo "[ANOMALY]" >&2;
+		exit;
 	fi
 
 	file_path="$DOWNLOAD_REP/$2$DOWN_EXT";
@@ -420,6 +463,7 @@ function download() {
 
 	echo "0";
 }
+
 
 
 #===  FUNCTION  ================================================================
@@ -449,6 +493,7 @@ function reformatURL() {
 }
 
 
+
 #===  FUNCTION  ================================================================
 #          NAME: downloadSite
 #   DESCRIPTION:
@@ -463,10 +508,10 @@ function downloadSite() {
 		exit;
 	fi
 
-
-
 	gender_b="boy 1 garcon";
 	gender_f="girl 2 fille";
+
+	filename="";
 
 	if [[ ! -e "$WEB_SITES_FILE" ]]; then
 		echo "$INIT_ERROR";
@@ -480,11 +525,42 @@ function downloadSite() {
 	fin=$5;
 
 	url=$(sed -n "$site"'p' "$WEB_SITES_FILE");
+	mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
 
+	letter=$(majuscule $letter);
 
+	if [[ ! "${mod[0]}" = "-" ]]; then
+		if [[ ! "${mod[0]}" = "1" ]]; then
+			letter=$(expr $(echo -n "$letter" | od -An -tuC) - 64);
+		fi
+		filename+="$letter";
+	else
+		filename+="-";
+	fi
 
-
+	if [[ ! "${mod[1]}" = "-" ]]; then
+		if [[ "$gender" = "1" ]]; then
+			$gender=$gender_b[${mod[1]}];
+		else
+			$gender=$gender_f[${mod[1]}];
+		fi
+		filename+="$gender";
+	else
+		filename+="-";
+	fi
+	
+	if [[ ! "${mod[2]}" = "-" ]]; then
+		for (( page = $debut; page <= $fin; page++ )); do
+			p_url=$(reformatURL url $letter $gender $page);
+			status=$(download p_url filename);
+			if [[ "$status" -lt "0" ]]; then
+				echo "Erreur de téléchargement de la page : $p_url";
+			fi
+		done
+	fi
 }
+
+
 
 
 #===  FUNCTION  ================================================================
@@ -505,7 +581,15 @@ function main() {
 		;;
 	"-i") 		initialization;
 		;;
-	"-d") 		echo -e "-d Option non géré";
+	"-d") 		if [[ ! -e "CAMPAINGN_FILE" ]]; then
+					echo -n "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtiliser l'option : -a";
+					exit;
+				fi
+				camp=$(cat "$CAMPAINGN_FILE");
+				for c in $camp; do
+					downloadSite $c;
+				done
+
 		;;
 	"-c") 		deleteCampaign;
 		;;
@@ -545,16 +629,4 @@ fi
 
 main $*;
 
-
-# 3
-# La convergence sera d'ordre 2 si 
-# g'(a)=0 et g''(a)!=0
-# 4
-# La convergence sera d'ordre 3 si 
-# g'(a)=g''(a)=0 et g'''(a)!=0
-# p 14
-
-# Démonstration page 16 erreur de coidrature
-
-# Test de la fonction checkArgsCampaign
 
