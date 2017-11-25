@@ -131,7 +131,8 @@ function majuscule() {
 function initialization() {
 
 	if [[ "$#" -ne "0" ]]; then
-		return "$ARGS_ERROR";
+		echo "[ANOMALY] invalid argument number in initialization()" >&2;
+		exit;
 	fi
 
 	{
@@ -147,8 +148,8 @@ function initialization() {
 
 
 	{
-		echo "1 - +";
-		echo "1 2 +";
+		echo "1 - -";
+		echo "1 2 -";
 	} > "$MOD_SITES_FILE";
 }
 
@@ -164,7 +165,8 @@ function initialization() {
 function getAllSiteName() {
 
 	if [[ "$#" -ne "0" ]]; then
-		return "$ARGS_ERROR";
+		echo "[ANOMALY] invalid argument number in getAllSiteName()" >&2;
+		exit;
 	fi
 
 	if [[ ! -e "$WEB_SITES_FILE" ]]; then
@@ -292,8 +294,10 @@ function checkArgsCampaign() {
 		$debut=fin;
 	fi
 
-	if [[ "$debut" = "-" ]]; then
+
+	if [ "$debut" = "-" ] || [ "$fin" = "-" ]; then
 		mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
+		echo $mod;
 		if [[ ! "${mod[2]}" = "-" ]]; then
 			errors+=" -9";
 		fi
@@ -330,7 +334,7 @@ function checkArgsCampaign() {
 function printCampaignErrors() {
 	
 	if [[ "$#" -ne "1" ]]; then
-		echo "[ANOMALY]" >&2;
+		echo "[ANOMALY] invalid argument number in printCampaignErrors()" >&2;
 		return;
 	fi
 
@@ -386,8 +390,8 @@ function printCampaignErrors() {
 function addCampaign() {
 
 	if [[ "$#" -ne "5" ]]; then
-		echo "$ARGS_ERROR";
-		return;
+		echo "[ANOMALY] invalid argument number in addCampaign()" >&2;
+		exit;
 	fi
 
 	string="";
@@ -412,7 +416,8 @@ function addCampaign() {
 function deleteCampaign() {
 
 	if [[ "$#" -ne "0" ]]; then
-		return "$ARGS_ERROR";
+		echo "[ANOMALY] invalid argument number in deleteCampaign()" >&2;
+		exit;
 	fi
 
 	if [[ -e "$CAMPAINGN_FILE" ]]; then
@@ -438,7 +443,7 @@ function deleteCampaign() {
 function download() {
 
 	if [[ $# -ne 2 ]]; then
-		echo "[ANOMALY]" >&2;
+		echo "[ANOMALY] invalid argument number in download()" >&2;
 		exit;
 	fi
 
@@ -473,7 +478,7 @@ function download() {
 function reformatURL() {
 
 	if [[ $# -ne 4 ]]; then
-		echo "[ANOMALY]" >&2;
+		echo "[ANOMALY] invalide argument number in reformatURL()" >&2;
 		exit;
 	fi
 
@@ -501,7 +506,7 @@ function reformatURL() {
 function downloadSite() {
 
 	if [[ $# -ne 5 ]]; then
-		echo "[ANOMALY]" >&2;
+		echo "[ANOMALY] invalid argument number in downloadSite()" >&2;
 		exit;
 	fi
 
@@ -577,7 +582,7 @@ function main() {
 		;;
 	"-i") 		initialization;
 		;;
-	"-d") 		if [[ ! -e "CAMPAINGN_FILE" ]]; then
+	"-d") 		if [[ ! -e "$CAMPAINGN_FILE" ]]; then
 					echo -n "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtiliser l'option : -a";
 					exit;
 				fi
@@ -598,11 +603,7 @@ function main() {
 					exit;
 				fi
 
-				status=$(addCampaign $line);
-				if [[ "$status" -eq "$ARGS_ERROR" ]]; then
-					echo "[ANOMALY]" >&2;
-					exit;
-				fi
+				addCampaign $line;
 				
 				shift 5;
 		;;
