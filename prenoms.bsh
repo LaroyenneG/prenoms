@@ -5,15 +5,15 @@
 #
 #         USAGE:  ./prenoms.bsh
 #
-#   DESCRIPTION:
+#   DESCRIPTION: Projet d'Unix de 1er année
 #
-#       OPTIONS:  ---
-#  REQUIREMENTS:  ---
+#       OPTIONS:  -i -a -d -c -m
+#  REQUIREMENTS:  Bash
 #          BUGS:  ---
 #         NOTES:  ---
 #        AUTHOR:  LAROYENNE Guillaume
-#       COMPANY:  ---
-#       VERSION:  ---
+#       COMPANY:  ENSISA
+#       VERSION:  1.0
 #       CREATED:  ---
 #      REVISION:  ---
 #===============================================================================
@@ -48,9 +48,11 @@ MOD_SITES_FILE=".mod.txt";
 
 DOWN_EXT=".html";
 
+
+
 #===  FUNCTION  ================================================================
 #          NAME: isNumeric
-#   DESCRIPTION: 
+#   DESCRIPTION: Return void if the parameter is not a natural integer.
 #    PARAMETERS: number
 #       RETURNS: number
 #===============================================================================
@@ -68,7 +70,7 @@ function isNumeric() {
 
 #===  FUNCTION  ================================================================
 #          NAME: isCharacter
-#   DESCRIPTION: 
+#   DESCRIPTION: Return void if the parameter is not a character.
 #    PARAMETERS: letter
 #       RETURNS: letter
 #===============================================================================
@@ -95,7 +97,7 @@ function isCharacter() {
 
 #===  FUNCTION  ================================================================
 #          NAME: minuscule
-#   DESCRIPTION: 
+#   DESCRIPTION: Format the character in lowercase.
 #    PARAMETERS: letter
 #       RETURNS: letter
 #===============================================================================
@@ -108,7 +110,7 @@ function minuscule() {
 
 #===  FUNCTION  ================================================================
 #          NAME: majuscule
-#   DESCRIPTION: 
+#   DESCRIPTION: Format the character in upper case.
 #    PARAMETERS: letter
 #       RETURNS: letter
 #===============================================================================
@@ -119,10 +121,9 @@ function majuscule() {
 
 
 
-
 #===  FUNCTION  ================================================================
 #          NAME: initialization
-#   DESCRIPTION: 
+#   DESCRIPTION: Creates the initialization files. 
 #    PARAMETERS: void
 #       RETURNS: void
 #===============================================================================
@@ -155,7 +156,7 @@ function initialization() {
 
 #===  FUNCTION  ================================================================
 #          NAME: getAllSiteName
-#   DESCRIPTION: 
+#   DESCRIPTION: Returns the name of each site in the initialization file.
 #    PARAMETERS: void
 #       RETURNS: string
 #===============================================================================
@@ -185,7 +186,7 @@ function getAllSiteName() {
 
 #===  FUNCTION  ================================================================
 #          NAME: checkArgsCampaign
-#   DESCRIPTION:
+#   DESCRIPTION: Checks the campaign passed as a parameter and returns its reformatted value or errors.
 #    PARAMETERS: site letter gender start end
 #       RETURNS: format line or void string
 #===============================================================================
@@ -319,11 +320,9 @@ function checkArgsCampaign() {
 
 
 
-
-
 #===  FUNCTION  ================================================================
 #          NAME: printCampaignErrors
-#   DESCRIPTION:
+#   DESCRIPTION: Informs the user of errors in his campaign.
 #    PARAMETERS: errors
 #       RETURNS: void
 #===============================================================================
@@ -377,11 +376,9 @@ function printCampaignErrors() {
 
 
 
-
-
 #===  FUNCTION  ================================================================
 #          NAME: addCampaign
-#   DESCRIPTION:
+#   DESCRIPTION: Adds the campaign passed as a parameter in the campaign file.
 #    PARAMETERS: site lettre genre debut fin
 #       RETURNS: status (integer)
 #===============================================================================
@@ -405,10 +402,9 @@ function addCampaign() {
 
 
 
-
 #===  FUNCTION  ================================================================
 #          NAME: deleteCampaign
-#   DESCRIPTION:
+#   DESCRIPTION: Delete the download directory and the campaign file.
 #    PARAMETERS: void
 #       RETURNS: void
 #===============================================================================
@@ -430,10 +426,11 @@ function deleteCampaign() {
 
 
 
-
 #===  FUNCTION  ================================================================
 #          NAME: download
-#   DESCRIPTION:
+#   DESCRIPTION: Downloads the page targeted by the URL passed as a parameter in
+#				 the file passed as a parameter. If the file already exists there
+#                is no download.
 #    PARAMETERS: url file_name
 #       RETURNS: status (integer)
 #===============================================================================
@@ -468,9 +465,9 @@ function download() {
 
 #===  FUNCTION  ================================================================
 #          NAME: reformatURL
-#   DESCRIPTION:
-#    PARAMETERS: url letter gender page
-#       RETURNS: url
+#   DESCRIPTION: Formats the URL according to the values ​​passed in parameter for the download.
+#    PARAMETERS: URL letter gender page
+#       RETURNS: URL
 #===============================================================================
 
 function reformatURL() {
@@ -496,7 +493,7 @@ function reformatURL() {
 
 #===  FUNCTION  ================================================================
 #          NAME: downloadSite
-#   DESCRIPTION:
+#   DESCRIPTION: 
 #    PARAMETERS: site letter gender start end 
 #       RETURNS: status (integer)
 #===============================================================================
@@ -554,7 +551,7 @@ function downloadSite() {
 			p_url=$(reformatURL url $letter $gender $page);
 			status=$(download p_url filename);
 			if [[ "$status" -lt "0" ]]; then
-				echo "Erreur de téléchargement de la page : $p_url";
+				echo "Erreur de téléchargement de la page : $p_url" >&2;
 			fi
 		done
 	fi
@@ -562,12 +559,11 @@ function downloadSite() {
 
 
 
-
 #===  FUNCTION  ================================================================
 #          NAME: main
-#   DESCRIPTION:
+#   DESCRIPTION: Main method, recursive processing of program arguments.
 #    PARAMETERS: args
-#       RETURNS: status (integer)
+#       RETURNS: void
 #===============================================================================
 
 function main() {
@@ -612,7 +608,7 @@ function main() {
 		;;
 	"-m")		echo -e "-m Option non géré";
 		;;
-	*)			echo -e "option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
+	*)			echo -e "Option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
 				return;
 		;;
 	esac
@@ -622,11 +618,12 @@ function main() {
 }
 
 
+#=========== run ==============
+
 if [[ "$#" -lt 1 ]]; then
 	echo -e "$USAGE";
 	exit;
 fi
 
 main $*;
-
 
