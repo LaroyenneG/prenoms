@@ -296,9 +296,8 @@ function checkArgsCampaign() {
 
 
 	if [ "$debut" = "-" ] || [ "$fin" = "-" ]; then
-		mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
-		echo $mod;
-		if [[ ! "${mod[2]}" = "-" ]]; then
+		mod=$(echo $(sed -n "$site"'p' "$MOD_SITES_FILE") | awk {'print $2'});
+		if [[ ! "$mod" = "-" ]]; then
 			errors+=" -9";
 		fi
 	fi
@@ -400,8 +399,6 @@ function addCampaign() {
 	done
 
 	echo "$string" >> "$CAMPAINGN_FILE";
-
-	echo "0";
 }
 
 
@@ -586,16 +583,18 @@ function main() {
 					echo -n "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtiliser l'option : -a";
 					exit;
 				fi
-				camp=$(cat "$CAMPAINGN_FILE");
-				for c in $camp; do
-					downloadSite $c;
-				done
+
+				while read line; do
+					echo $(downloadSite $line);
+				done < $CAMPAINGN_FILE;
+
+				#integrer la gestion des erreur
 
 		;;
 	"-c") 		deleteCampaign;
 		;;
 	"-a") 		line=$(checkArgsCampaign $2 $3 $4 $5 $6);
-
+				
 				n=${line:0:2};
 
 				if [ "-$(isNumeric ${n#-})" = "$n" ] && [ "$n" -lt "0" ]; then
