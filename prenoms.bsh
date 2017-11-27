@@ -151,6 +151,12 @@ function initialization() {
 	{
 		echo "1 - -";
 		echo "1 2 -";
+		echo "1 2 -";
+		echo "1 - +";
+		echo "1 - +";
+		echo "1 1 +";
+		echo "2 1 +";
+		echo "1 0 +";
 	} > $MOD_SITES_FILE;
 }
 
@@ -179,7 +185,7 @@ function getAllSiteName() {
 		tpm=${line#*//};
 		tpm=${tpm%/*};
 		tpm=${tpm#*.};
-		string="$string ${tpm%.*}";
+		string+=" ${tpm%.*}";
 	done
 
 	echo $string;
@@ -525,13 +531,17 @@ function getFileNameAndURL() {
 
 	fileName+="${site}_";
 
-	letter=$(majuscule $letter);
-
 	modLetter=$(echo "$mod" | awk {'print $1'});
 	if [[ ! "$modLetter" = "-" ]]; then
-		if [[ ! "$modLetter" = "1" ]]; then
-			letter=$(expr $(echo -n "$letter" | od -An -tuC) - 64);
+
+		if [[ "$modLetter" = "1" ]]; then
+			letter=$(majuscule $letter);
 		fi
+
+		if [[ "$modLetter" = "2" ]]; then
+			letter=$(expr $(echo -n "$letter" | od -An -tuC) - 96);
+		fi
+
 	else
 		letter="-";
 	fi
@@ -541,9 +551,9 @@ function getFileNameAndURL() {
 	modGender=$(echo "$mod" | awk {'print $2'});
 	if [[ ! "$modGender" = "-" ]]; then
 		if [[ "$gender" = "1" ]]; then
-			$gender=$GENDER_B[$modGender];
+			$gender=${GENDER_B[$modGender]};
 		else
-			$gender=$GENDER_F[$modGender];
+			$gender=${GENDER_F[$modGender]};
 		fi
 	else
 		gender="-";
@@ -596,7 +606,7 @@ function downloadSite() {
 		fileName=$(echo "$fileAurl" | awk {'print $1'});
 		p_url=$(echo "$fileAurl" | awk {'print $2'});
 		status=$(download $p_url $fileName);
-		
+
 		if [[ "$status" -lt "0" ]]; then
 			echo "Erreur de téléchargement de la page : $p_url" >&2;
 		fi
