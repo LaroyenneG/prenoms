@@ -60,7 +60,7 @@ GENDER_F="girl 2 fille";
 
 function isNumeric() {
 	
-	if [[ "$#" -ne "1" ]]; then
+	if [[ $# -ne 1 ]]; then
 		echo "";
 		return;
 	fi
@@ -78,7 +78,7 @@ function isNumeric() {
 
 function isCharacter() {
 
-	if [[ "$#" -ne "1" ]]; then
+	if [[ $# -ne 1 ]]; then
 		echo "";
 		return;
 	fi
@@ -171,7 +171,7 @@ function initialization() {
 
 function getAllSiteName() {
 
-	if [[ "$#" -ne "0" ]]; then
+	if [[ $# -ne 0 ]]; then
 		echo "[ANOMALY] invalid argument number in getAllSiteName()" >&2;
 		exit;
 	fi
@@ -204,7 +204,7 @@ function checkArgsCampaign() {
 
 	errors="";
 
-	if [[ "$#" -lt  "5" ]]; then
+	if [[ $# -lt  5 ]]; then
 		echo $ARGS_ERROR;
 		return;
 	fi
@@ -302,8 +302,7 @@ function checkArgsCampaign() {
 
 
 	if [ "$debut" = "-" ] || [ "$fin" = "-" ]; then
-		mod=$(echo $(sed -n "$site"'p' "$MOD_SITES_FILE") | awk {'print $2'});
-		if [[ ! "$mod" = "-" ]]; then
+		if [[ ! "$(echo $(sed -n "$site"'p' "$MOD_SITES_FILE") | awk {'print 3'})" = "-" ]]; then
 			errors+=" -9";
 		fi
 	fi
@@ -661,6 +660,8 @@ function main() {
 				addCampaign $line;
 				
 				shift 5;
+		;;
+	"-e")		echo -e "-e Option non géré";
 		;;
 	"-m")		echo -e "-m Option non géré";
 		;;
