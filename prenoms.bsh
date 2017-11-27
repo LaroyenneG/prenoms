@@ -485,11 +485,75 @@ function reformatURL() {
 	gender=$3;
 	page=$4;
 
-	url=${url//%page%/$page};
 	url=${url//%letter%/$letter};
 	url=${url//%gender%/$gender};
+	url=${url//%page%/$page};
 
 	echo $url;
+}
+
+
+
+#===  FUNCTION  ================================================================
+#          NAME: getFileNameAndURL
+#   DESCRIPTION: 
+#    PARAMETERS: site letter gender page
+#       RETURNS: filename URL
+#===============================================================================
+
+function getFileNameAndURL() {
+
+	if [[ $# -ne 4 ]]; then
+		echo "[ANOMALY] invalid argument number in getFileNameAndURL()" >&2;
+		exit;
+	fi
+
+	fileName="";
+
+	if [[ ! -e "$WEB_SITES_FILE" ]]; then
+		echo "[ANOMALY] initialization error" >&2;
+		exit;
+	fi
+
+	site=$1;
+	letter=$2;
+	gender=$3;
+	page=$4;
+
+	url=$(sed -n "$site"'p' "$WEB_SITES_FILE");
+	mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
+
+	fileName+="${site}_";
+
+	letter=$(majuscule $letter);
+
+	modLetter=$(echo "$mod" | awk {'print $1'});
+	if [[ ! "$modLetter" = "-" ]]; then
+		if [[ ! "$modLetter" = "1" ]]; then
+			letter=$(expr $(echo -n "$letter" | od -An -tuC) - 64);
+		fi
+	else
+		letter="-";
+	fi
+
+	fileName+="${letter}_";
+
+	modGender=$(echo "$mod" | awk {'print $2'});
+	if [[ ! "$modGender" = "-" ]]; then
+		if [[ "$gender" = "1" ]]; then
+			$gender=$GENDER_B[$modGender];
+		else
+			$gender=$GENDER_F[$modGender];
+		fi
+	else
+		gender="-";
+	fi
+
+	fileName+="${gender}_$page";
+	
+	p_url=$(reformatURL $url $letter $gender $page);
+
+	echo "$fileName $p_url";
 }
 
 
@@ -509,8 +573,6 @@ function downloadSite() {
 		exit;
 	fi
 
-	fileName="";
-
 	if [[ ! -e "$WEB_SITES_FILE" ]]; then
 		echo $INIT_ERROR;
 		return;	
@@ -521,50 +583,20 @@ function downloadSite() {
 	gender=$3;
 	debut=$4;
 	fin=$5;
-
-	url=$(sed -n "$site"'p' "$WEB_SITES_FILE");
-	mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
-
-	fileName+="${site}_";
-
-	letter=$(majuscule $letter);
-
-	modLetter=$(echo "$mod" | awk {'print $1'});
-
-	if [[ ! "$modLetter" = "-" ]]; then
-		if [[ ! "$modLetter" = "1" ]]; then
-			letter=$(expr $(echo -n "$letter" | od -An -tuC) - 64);
-		fi
-	else
-		letter="-";
-	fi
-
-	fileName+="${letter}_";
-
-	modGender=$(echo "$mod" | awk {'print $2'});
-
-	if [[ ! "$modGender" = "-" ]]; then
-		if [[ "$gender" = "1" ]]; then
-			$gender=$GENDER_B[$modGender];
-		else
-			$gender=$GENDER_F[$modGender];
-		fi
-	else
-		gender="-";
-	fi
-
-	fileName+="${gender}_";
+	
 
 	modPage=$(echo "$mod" | awk {'print $3'});
-	
 	if [[ "$modPage" = "-" ]]; then
 		debut=1;
 		fin=1;
 	fi
 
 	for (( page = $debut; page <= $fin; page++ )); do
-		fileName+="$page";
-		p_url=$(reformatURL $url $letter $gender $page);
+
+		fileAurl=$(getFileNameAndURL $site $letter $gender $page);
+
+		fileName=$(echo "$fileAurl" | awk {'print $1'});
+		p_url=$(echo "$fileAurl" | awk {'print $2'});
 		status=$(download $p_url $fileName);
 		if [[ "$status" -lt "0" ]]; then
 			echo "Erreur de téléchargement de la page : $p_url" >&2;
