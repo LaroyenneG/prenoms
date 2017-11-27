@@ -46,8 +46,8 @@ CAMPAINGN_FILE=".campaign.txt";
 DOWNLOAD_REP="download";
 MOD_SITES_FILE=".mod.txt";
 DOWN_EXT=".html";
-GENDER_B="boy 1 garcon";
-GENDER_F="girl 2 fille";
+GENDER_B=("boy" "1" "garcon");
+GENDER_F=("girl" "2" "fille");
 
 
 
@@ -131,7 +131,7 @@ function majuscule() {
 
 function initialization() {
 
-	if [[ "$#" -ne "0" ]]; then
+	if [[ $# -ne 0 ]]; then
 		echo "[ANOMALY] invalid argument number in initialization()" >&2;
 		exit;
 	fi
@@ -297,12 +297,13 @@ function checkArgsCampaign() {
 	fi
 
 	if [ ! "$fin" = "-" ] && [ "$debut" = "-" ] ; then
-		$debut=fin;
+		debut=$fin;
 	fi
 
 
 	if [ "$debut" = "-" ] || [ "$fin" = "-" ]; then
-		if [[ ! "$(echo $(sed -n "$site"'p' "$MOD_SITES_FILE") | awk {'print 3'})" = "-" ]]; then
+		ppar=$(echo $(sed -n "$site"'p' "$MOD_SITES_FILE") | awk {'print $3'});
+		if [[ ! "$ppar" = "-" ]]; then
 			errors+=" -9";
 		fi
 	fi
@@ -337,7 +338,7 @@ function checkArgsCampaign() {
 
 function printCampaignErrors() {
 	
-	if [[ "$#" -ne "1" ]]; then
+	if [[ $# -ne 1 ]]; then
 		echo "[ANOMALY] invalid argument number in printCampaignErrors()" >&2;
 		return;
 	fi
@@ -393,7 +394,7 @@ function printCampaignErrors() {
 
 function addCampaign() {
 
-	if [[ "$#" -ne "5" ]]; then
+	if [[ $# -ne 5 ]]; then
 		echo "[ANOMALY] invalid argument number in addCampaign()" >&2;
 		exit;
 	fi
@@ -417,7 +418,7 @@ function addCampaign() {
 
 function deleteCampaign() {
 
-	if [[ "$#" -ne "0" ]]; then
+	if [[ $# -ne 0 ]]; then
 		echo "[ANOMALY] invalid argument number in deleteCampaign()" >&2;
 		exit;
 	fi
@@ -459,6 +460,9 @@ function download() {
 	fi
 
 	curl -o "$file_path" "$1" 2>/dev/null;
+
+	echo "Téléchargement en cours (je ne dois pas étre là)" >&2;
+
 
 	if [[ ! -e "$file_path" ]]; then
 		echo -1;
@@ -513,12 +517,12 @@ function getFileNameAndURL() {
 		exit;
 	fi
 
-	fileName="";
-
 	if [[ ! -e "$WEB_SITES_FILE" ]]; then
 		echo "[ANOMALY] initialization error" >&2;
 		exit;
 	fi
+
+	fileName="";
 
 	site=$1;
 	letter=$2;
@@ -550,9 +554,9 @@ function getFileNameAndURL() {
 	modGender=$(echo "$mod" | awk {'print $2'});
 	if [[ ! "$modGender" = "-" ]]; then
 		if [[ "$gender" = "1" ]]; then
-			$gender=${GENDER_B[$modGender]};
+			gender=${GENDER_B[$modGender]};
 		else
-			$gender=${GENDER_F[$modGender]};
+			gender=${GENDER_F[$modGender]};
 		fi
 	else
 		gender="-";
@@ -593,8 +597,8 @@ function downloadSite() {
 	debut=$4;
 	fin=$5;
 
-
-	if [[ "$(echo "$(sed -n "$site"'p' "$MOD_SITES_FILE")" | awk {'print $3'})" = "-" ]]; then
+	modP=$(sed -n "$site"'p' "$MOD_SITES_FILE");
+	if [[ $(echo "$modP" | awk {'print $3'}) = "-" ]]; then
 		debut=1;
 		fin=1;
 	fi
@@ -604,6 +608,7 @@ function downloadSite() {
 		fileAurl=$(getFileNameAndURL $site $letter $gender $page);
 		fileName=$(echo "$fileAurl" | awk {'print $1'});
 		p_url=$(echo "$fileAurl" | awk {'print $2'});
+
 		status=$(download $p_url $fileName);
 
 		if [[ "$status" -lt "0" ]]; then
@@ -625,7 +630,7 @@ function downloadSite() {
 
 function main() {
 
-	if [[ "$#" -lt 1 ]]; then
+	if [[ $# -lt 1 ]]; then
 		return;
 	fi
 
