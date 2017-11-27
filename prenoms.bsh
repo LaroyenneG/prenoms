@@ -583,10 +583,9 @@ function downloadSite() {
 	gender=$3;
 	debut=$4;
 	fin=$5;
-	
 
-	modPage=$(echo "$mod" | awk {'print $3'});
-	if [[ "$modPage" = "-" ]]; then
+
+	if [[ "$(echo "$(sed -n "$site"'p' "$MOD_SITES_FILE")" | awk {'print $3'})" = "-" ]]; then
 		debut=1;
 		fin=1;
 	fi
@@ -594,10 +593,10 @@ function downloadSite() {
 	for (( page = $debut; page <= $fin; page++ )); do
 
 		fileAurl=$(getFileNameAndURL $site $letter $gender $page);
-
 		fileName=$(echo "$fileAurl" | awk {'print $1'});
 		p_url=$(echo "$fileAurl" | awk {'print $2'});
 		status=$(download $p_url $fileName);
+		
 		if [[ "$status" -lt "0" ]]; then
 			echo "Erreur de téléchargement de la page : $p_url" >&2;
 		fi
