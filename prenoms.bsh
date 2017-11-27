@@ -44,6 +44,7 @@ INIT_ERROR=-77;
 WEB_SITES_FILE=".site.txt";
 CAMPAINGN_FILE=".campaign.txt";
 DOWNLOAD_REP="download";
+EXTRACT_REP="extract";
 MOD_SITES_FILE=".mod.txt";
 DOWN_EXT=".html";
 GENDER_B=("boy" "1" "garcon");
@@ -195,7 +196,8 @@ function getAllSiteName() {
 
 #===  FUNCTION  ================================================================
 #          NAME: checkArgsCampaign
-#   DESCRIPTION: Checks the campaign passed as a parameter and returns its reformatted value or errors.
+#   DESCRIPTION: Checks the campaign passed as a parameter and returns its 
+#				 reformatted value or errors.
 #    PARAMETERS: site letter gender start end
 #       RETURNS: format line or void string
 #===============================================================================
@@ -622,9 +624,65 @@ function downloadSite() {
 
 
 #===  FUNCTION  ================================================================
+#          NAME: extractAujourdhui
+#   DESCRIPTION: 
+#    PARAMETERS: HTMLpageName
+#       RETURNS: void
+#===============================================================================
+
+function extractAujourdhui() {
+
+	if [[ $# -ne 1 ]]; then
+		echo "[ANOMALY] invalid argument number in extractAujourdhui()" >&2;
+		exit;
+	fi
+
+	table=$(sed -n '/<table class="defaultText" width="400" border="0" cellpadding="4" style="margin-left:10px;">/,/<\/table>/p' $1);
+
+	echo $table;
+}
+
+
+
+#===  FUNCTION  ================================================================
+#          NAME: extractPage
+#   DESCRIPTION: 
+#    PARAMETERS: HTMLpageName
+#       RETURNS: void
+#===============================================================================
+
+function extractPage() {
+
+	if [[ $# -ne 1 ]]; then
+		echo "[ANOMALY] invalid argument number in extractPage()" >&2;
+		exit;
+	fi
+
+	site=$(echo $1 | cut -d'_' -f1);
+	lettre=$(echo $1 | cut -d'_' -f2);
+	genre=$(echo $1 | cut -d'_' -f3);
+	page=$(echo $1 | cut -d'_' -f4);
+
+	case $site in
+		"1")	extractAujourdhui $1;
+			;;
+		"4")	echo "2";
+			;;
+		*)		echo "Ce site n'est pas géré pour l'extration :-(";
+			;;
+	esac
+
+
+	echo $site;
+
+}
+
+
+
+#===  FUNCTION  ================================================================
 #          NAME: main
 #   DESCRIPTION: Main method, recursive processing of program arguments.
-#    PARAMETERS: args
+#    PARAMETERS: args *
 #       RETURNS: void
 #===============================================================================
 
@@ -687,5 +745,5 @@ if [[ "$#" -lt 1 ]]; then
 	exit;
 fi
 
-main $*;
+# main $*;
 
