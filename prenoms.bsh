@@ -7,7 +7,7 @@
 #
 #   DESCRIPTION: Projet d'Unix de 1er année
 #
-#       OPTIONS:  -i -a -d -c -m
+#       OPTIONS:  -i -a <site> <lettre> <genre> <debut> <fin> -d -c -m <file>
 #  REQUIREMENTS:  Bash
 #          BUGS:  ---
 #         NOTES:  ---
@@ -28,7 +28,7 @@ LANG="C"
 #===============================================================================
 
 
-HELP="./prenoms.bsh\n 
+HELP="./prenoms.bsh\n
 \t -i \t\t\t\t\t\t Initialisation\n
 \t -c \t\t\t\t\t\t Effacement de la campagne précédente\n
 \t -a <site> <lettre> <genre> <debut> <fin> \t Ajout d’une nouvelle règle dans la campagne\n
@@ -45,7 +45,6 @@ WEB_SITES_FILE=".site.txt";
 CAMPAINGN_FILE=".campaign.txt";
 DOWNLOAD_REP="download";
 MOD_SITES_FILE=".mod.txt";
-
 DOWN_EXT=".html";
 
 
