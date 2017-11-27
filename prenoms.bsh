@@ -49,6 +49,10 @@ MOD_SITES_FILE=".mod.txt";
 DOWN_EXT=".html";
 GENDER_B=("boy" "1" "garcon");
 GENDER_F=("girl" "2" "fille");
+TMP_FILE=".tmp";
+CODE_MAS="M";
+CODE_FEM="F";
+CODE_MIX="M/F";
 
 
 
@@ -624,6 +628,31 @@ function downloadSite() {
 
 
 #===  FUNCTION  ================================================================
+#          NAME: getHTMLChlid
+#   DESCRIPTION: 
+#    PARAMETERS: htmlElement tag
+#       RETURNS: void
+#===============================================================================
+
+function getHTMLChlid() {
+
+	if [[ $# -ne 2 ]]; then
+		echo "[ANOMALY] invalid argument number in getHTMLChlid()" >&2;
+		exit;
+	fi
+
+	tag=$2;
+
+	echo "$1" | sed -n '/<'"$tag"'>/,/<\/'"$tag"'>/ {
+               s/^.*<'"$tag"'>//
+               s/<\/'"$tag"'>.*$//
+               p
+          }';
+}
+
+
+
+#===  FUNCTION  ================================================================
 #          NAME: extractAujourdhui
 #   DESCRIPTION: 
 #    PARAMETERS: HTMLpageName
@@ -637,11 +666,53 @@ function extractAujourdhui() {
 		exit;
 	fi
 
-	table=$(sed -n '/<table class="defaultText" width="400" border="0" cellpadding="4" style="margin-left:10px;">/,/<\/table>/p' $1);
+	tpm=$(sed -n '/<table class="defaultText" width="400" border="0" cellpadding="4" style="margin-left:10px;">/,/<\/table>/p' $1);
+	tpm=$(echo "$tpm" | sed -e 's/<td valign="top">/<td>/g');
+	tpm=$(getHTMLChlid "$tpm" "td");
+	tpm=$(getHTMLChlid "$tpm" "b");
+	tpm=$(echo "$tpm" | tr -d '\n');
 
-	echo $table;
+	echo "$tpm";
+
 }
 
+
+
+#===  FUNCTION  ================================================================
+#          NAME: extractPrenoms
+#   DESCRIPTION: 
+#    PARAMETERS: HTMLpageName
+#       RETURNS: void
+#===============================================================================
+
+function extractPrenoms() {
+
+	if [[ $# -ne 1 ]]; then
+		echo "[ANOMALY] invalid argument number in extractPrenoms()" >&2;
+		exit;
+	fi
+
+	tpm=$(sed -n '/<div class="top-prenom resultat-colonne">/,/<\/div>/p' $1);
+	tpm=$(getHTMLChlid "$tpm" "li");
+
+	echo "$tpm" | while read line; do
+		gender="${line#*(}";
+		gender="${gender%)*}";
+
+		case $gender in
+			"Masculin") gender="$CODE_MAS";
+				;;
+			"Feminin")	gender="$CODE_FEM";
+				;;
+			*) 			gender="$CODE_MIX";
+				;;
+		esac
+
+   		name="${line#*>}";
+   		name="${name%<*}";
+   		echo -e "$gender\t$name";
+	done
+}
 
 
 #===  FUNCTION  ================================================================
@@ -666,7 +737,7 @@ function extractPage() {
 	case $site in
 		"1")	extractAujourdhui $1;
 			;;
-		"4")	echo "2";
+		"4")	extractPrenoms $1;
 			;;
 		*)		echo "Ce site n'est pas géré pour l'extration :-(";
 			;;
@@ -745,5 +816,6 @@ if [[ "$#" -lt 1 ]]; then
 	exit;
 fi
 
-# main $*;
+#main $*;
 
+extractPrenoms $1
