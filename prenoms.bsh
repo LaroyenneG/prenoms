@@ -46,6 +46,8 @@ CAMPAINGN_FILE=".campaign.txt";
 DOWNLOAD_REP="download";
 MOD_SITES_FILE=".mod.txt";
 DOWN_EXT=".html";
+GENDER_B="boy 1 garcon";
+GENDER_F="girl 2 fille";
 
 
 
@@ -82,12 +84,12 @@ function isCharacter() {
 	fi
 
 	if [[ "$1" = [a-z] ]]; then
-		echo "$1";
+		echo $1;
 		return;
 	fi
 
 	if [[ "$1" = [A-Z] ]]; then
-		echo "$1";
+		echo $1;
 		return;
 	fi
 }
@@ -143,13 +145,13 @@ function initialization() {
 		echo "http://www.quelprenom.com/liste_prenoms.php?code=FR&sexe%5B0%5D=%gender%&start=%letter%&page=%page%";
 		echo "http://www.magicmaman.com/prenom/recherche/commencantpar=%letter%#?commencantpar=%letter%&frai&sexe=%gender%&page=%page%";
 		echo "https://www.naissance.fr/prenoms/recherche?gender=%gender%&begin=%letter%&page=%page%";
-	} > "$WEB_SITES_FILE";
+	} > $WEB_SITES_FILE;
 
 
 	{
 		echo "1 - -";
 		echo "1 2 -";
-	} > "$MOD_SITES_FILE";
+	} > $MOD_SITES_FILE;
 }
 
 
@@ -197,14 +199,14 @@ function checkArgsCampaign() {
 	errors="";
 
 	if [[ "$#" -lt  "5" ]]; then
-		echo "$ARGS_ERROR";
+		echo $ARGS_ERROR;
 		return;
 	fi
 
 	listNameSite=$(getAllSiteName);
 
 	if [ "$listNameSite" = "" ] || [ ! -e "$MOD_SITES_FILE" ]; then
-		echo "$INIT_ERROR";
+		echo $INIT_ERROR;
 		return;	
 	fi
 
@@ -281,7 +283,6 @@ function checkArgsCampaign() {
 		if [ ! "$fin" = "no" ] && [ ! "$fin" = "-" ]; then
 			errors+=" -6";
 		fi
-
 		fin="-";
 	fi
 
@@ -394,10 +395,10 @@ function addCampaign() {
 
 	string="";
 	for (( i = 1; i <= $#; i++ )); do
-		string="$string ${!i}";
+		string+=" ${!i}";
 	done
 
-	echo "$string" >> "$CAMPAINGN_FILE";
+	echo $string >> $CAMPAINGN_FILE;
 }
 
 
@@ -448,25 +449,26 @@ function download() {
 	if [[ ! -d "$DOWNLOAD_REP/" ]]; then
 		mkdir "$DOWNLOAD_REP";
 	elif [[ -e "$file_path" ]]; then
-		echo "1";
+		echo 1;
 		return;
 	fi
 
 	curl -o "$file_path" "$1" 2>/dev/null;
 
 	if [[ ! -e "$file_path" ]]; then
-		echo "-1";
+		echo -1;
 		return;
 	fi
 
-	echo "0";
+	echo 0;
 }
 
 
 
 #===  FUNCTION  ================================================================
 #          NAME: reformatURL
-#   DESCRIPTION: Formats the URL according to the values ​​passed in parameter for the download.
+#   DESCRIPTION: Formats the URL according to the values ​​passed in parameter for
+#				 the download.
 #    PARAMETERS: URL letter gender page
 #       RETURNS: URL
 #===============================================================================
@@ -494,7 +496,8 @@ function reformatURL() {
 
 #===  FUNCTION  ================================================================
 #          NAME: downloadSite
-#   DESCRIPTION: 
+#   DESCRIPTION: Download the site associated with the campaign passed in 
+#				 parameter.
 #    PARAMETERS: site letter gender start end 
 #       RETURNS: status (integer)
 #===============================================================================
@@ -506,13 +509,10 @@ function downloadSite() {
 		exit;
 	fi
 
-	gender_b="boy 1 garcon";
-	gender_f="girl 2 fille";
-
-	filename="";
+	fileName="";
 
 	if [[ ! -e "$WEB_SITES_FILE" ]]; then
-		echo "$INIT_ERROR";
+		echo $INIT_ERROR;
 		return;	
 	fi
 
@@ -525,37 +525,53 @@ function downloadSite() {
 	url=$(sed -n "$site"'p' "$WEB_SITES_FILE");
 	mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
 
+	fileName+="${site}_";
+
 	letter=$(majuscule $letter);
 
-	if [[ ! "${mod[0]}" = "-" ]]; then
-		if [[ ! "${mod[0]}" = "1" ]]; then
+	modLetter=$(echo "$mod" | awk {'print $1'});
+
+	if [[ ! "$modLetter" = "-" ]]; then
+		if [[ ! "$modLetter" = "1" ]]; then
 			letter=$(expr $(echo -n "$letter" | od -An -tuC) - 64);
 		fi
-		filename+="$letter";
 	else
-		filename+="-";
+		letter="-";
 	fi
 
-	if [[ ! "${mod[1]}" = "-" ]]; then
+	fileName+="${letter}_";
+
+	modGender=$(echo "$mod" | awk {'print $2'});
+
+	if [[ ! "$modGender" = "-" ]]; then
 		if [[ "$gender" = "1" ]]; then
-			$gender=$gender_b[${mod[1]}];
+			$gender=$GENDER_B[$modGender];
 		else
-			$gender=$gender_f[${mod[1]}];
+			$gender=$GENDER_F[$modGender];
 		fi
-		filename+="$gender";
 	else
-		filename+="-";
+		gender="-";
 	fi
+
+	fileName+="${gender}_";
+
+	modPage=$(echo "$mod" | awk {'print $3'});
 	
-	if [[ ! "${mod[2]}" = "-" ]]; then
-		for (( page = $debut; page <= $fin; page++ )); do
-			p_url=$(reformatURL url $letter $gender $page);
-			status=$(download p_url filename);
-			if [[ "$status" -lt "0" ]]; then
-				echo "Erreur de téléchargement de la page : $p_url" >&2;
-			fi
-		done
+	if [[ "$modPage" = "-" ]]; then
+		debut=1;
+		fin=1;
 	fi
+
+	for (( page = $debut; page <= $fin; page++ )); do
+		fileName+="$page";
+		p_url=$(reformatURL $url $letter $gender $page);
+		status=$(download $p_url $fileName);
+		if [[ "$status" -lt "0" ]]; then
+			echo "Erreur de téléchargement de la page : $p_url" >&2;
+		fi
+	done
+
+	echo 0;
 }
 
 
@@ -579,16 +595,16 @@ function main() {
 	"-i") 		initialization;
 		;;
 	"-d") 		if [[ ! -e "$CAMPAINGN_FILE" ]]; then
-					echo -n "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtiliser l'option : -a";
+					echo -e "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtiliser l'option : -a";
 					exit;
 				fi
 
 				while read line; do
-					echo $(downloadSite $line);
+					if [[ "$(downloadSite $line)" = "$INIT_ERROR" ]]; then
+					 	echo -e "Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\nUtiliser l'option : -i";
+					 	exit;
+					fi
 				done < $CAMPAINGN_FILE;
-
-				#integrer la gestion des erreur
-
 		;;
 	"-c") 		deleteCampaign;
 		;;
