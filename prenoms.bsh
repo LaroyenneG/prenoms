@@ -837,6 +837,27 @@ function extractAll() {
 }
 
 
+
+#===  FUNCTION  ================================================================
+#          NAME: fusion
+#   DESCRIPTION: destFile 
+#    PARAMETERS: 
+#       RETURNS: 
+#===============================================================================
+
+function fusion() {
+
+	if [[ $# -ne 1 ]]; then
+		echo "[ANOMALY] invalid argument number in function()" >&2;
+		exit;	
+	fi
+
+	destFile="$1";
+
+}
+
+
+
 #===  FUNCTION  ================================================================
 #          NAME: main
 #   DESCRIPTION: Main method, recursive processing of program arguments.
@@ -884,7 +905,8 @@ function main() {
 		;;
 	"-e")		extractAll;
 		;;
-	"-m")		echo -e "-m Option non géré";
+	"-m")		fusion $1;
+				shift 1;
 		;;
 	*)			echo -e "Option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
 				return;
