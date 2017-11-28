@@ -187,10 +187,10 @@ function getAllSiteName() {
 
 	string="";
 	for line in $(cat "$WEB_SITES_FILE"); do
-		tpm="${line#*//}";
-		tpm="${tpm%/*}";
-		tpm="${tpm#*.}";
-		string+=" ${tpm%.*}";
+		tmp="${line#*//}";
+		tmp="${tmp%/*}";
+		tmp="${tmp#*.}";
+		string+=" ${tmp%.*}";
 	done
 
 	echo $string;
@@ -417,7 +417,7 @@ function addCampaign() {
 
 #===  FUNCTION  ================================================================
 #          NAME: deleteCampaign
-#   DESCRIPTION: Delete the download directory and the campaign file.
+#   DESCRIPTION: Delete the download and extract directory and the campaign file.
 #    PARAMETERS: void
 #       RETURNS: void
 #===============================================================================
@@ -670,30 +670,30 @@ function extractAujourdhui() {
 		exit;
 	fi
 
-	tpm=$(sed -n '/<table class="defaultText" width="400" border="0" cellpadding="4" style="margin-left:10px;">/,/<\/table>/p' $1);
-	tpm=$(echo "$tpm" | sed -e 's/<td valign="top">/<td>/g');
+	tmp=$(sed -n '/<table class="defaultText" width="400" border="0" cellpadding="4" style="margin-left:10px;">/,/<\/table>/p' $1);
+	tmp=$(echo "$tmp" | sed -e 's/<td valign="top">/<td>/g');
 	
-	tpm=$(getHTMLChlid "$tpm" "tr");
+	tmp=$(getHTMLChlid "$tmp" "tr");
 	#Supression de la balsie de tête du tableau
-	tpm=$(echo "$tpm" | sed '1,13d'); 
+	tmp=$(echo "$tmp" | sed '1,13d'); 
 
-	tpm=$(echo "$tpm" | sed '/align="center"/d');
-	tpm=$(echo "$tpm" | sed '/<td>/d');
-	tpm=$(echo "$tpm" | sed '/<\/td>/d');
-	tpm=$(echo "$tpm" | sed '/span class/d');
+	tmp=$(echo "$tmp" | sed '/align="center"/d');
+	tmp=$(echo "$tmp" | sed '/<td>/d');
+	tmp=$(echo "$tmp" | sed '/<\/td>/d');
+	tmp=$(echo "$tmp" | sed '/span class/d');
 
 
 	#Suppression de toutes les lignes vides
-	tpm=$(echo "$tpm" | sed '/^$/d');
-	tpm=$(echo "$tpm" | sed '/./!d');
-	tpm=$(echo "$tpm" | sed  's/^$//g');
+	tmp=$(echo "$tmp" | sed '/^$/d');
+	tmp=$(echo "$tmp" | sed '/./!d');
+	tmp=$(echo "$tmp" | sed  's/^$//g');
 
 	count=0;
 	buffer="";
 	name="";
 	gender="";
 
-	echo "$tpm" | while read line; do   
+	echo "$tmp" | while read line; do   
    		
 		if [[ "$count" = "0" ]]; then
 			
@@ -740,10 +740,10 @@ function extractPrenoms() {
 		exit;
 	fi
 
-	tpm=$(sed -n '/<div class="top-prenom resultat-colonne">/,/<\/div>/p' $1);
-	tpm=$(getHTMLChlid "$tpm" "li");
+	tmp=$(sed -n '/<div class="top-prenom resultat-colonne">/,/<\/div>/p' $1);
+	tmp=$(getHTMLChlid "$tmp" "li");
 
-	echo "$tpm" | while read line; do
+	echo "$tmp" | while read line; do
 		gender="${line#*(}";
 		gender="${gender%)*}";
 
@@ -803,7 +803,7 @@ function extractPage() {
 #          NAME: extractAll
 #   DESCRIPTION: 
 #    PARAMETERS: void
-#       RETURNS: void
+#       RETURNS: status (intiger)
 #===============================================================================
 
 function extractAll() {
@@ -814,6 +814,7 @@ function extractAll() {
 	fi
 
 	if [[ ! -d "$DOWNLOAD_REP" ]]; then
+		echo "-1";
 		return;
 	fi
 
@@ -834,6 +835,8 @@ function extractAll() {
 			echo "La page : $filePath n'a pas pu etre extraite" >&2;
 		fi
 	done
+
+	echo "0";
 }
 
 
@@ -848,12 +851,40 @@ function extractAll() {
 function fusion() {
 
 	if [[ $# -ne 1 ]]; then
-		echo "[ANOMALY] invalid argument number in function()" >&2;
+		echo "[ANOMALY] invalid argument number in fusion()" >&2;
 		exit;	
 	fi
 
+	: '
+	if [[ ! -e "$CAMPAINGN_FILE" ]]; then
+		echo "-1";
+		return;
+	fi
+	'
+
+	if [[ ! -d "$EXTRACT_REP" ]]; then
+		echo "-1";
+		return;
+	fi
+
+	tmp="";
 	destFile="$1";
 
+	for filePath in $EXTRACT_REP/*; do
+		tmp+="$(cat "$filePath")\n";
+	done
+
+	# Clean tmp
+	tmp="$(echo -e "$tmp" | sed '$d')";
+	tmp="$(echo "$tmp" | sort -u)";
+	
+	# Order by dictionary
+	tmp="$(echo "$tmp" | sort +1 -d -f)";
+
+	# Save in output file
+	echo "$tmp" > "$destFile";
+
+	echo "0";
 }
 
 
@@ -877,13 +908,13 @@ function main() {
 	"-i") 		initialization;
 		;;
 	"-d") 		if [[ ! -e "$CAMPAINGN_FILE" ]]; then
-					echo -e "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtiliser l'option : -a";
+					echo -e "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtilisez l'option : -a";
 					exit;
 				fi
 
 				while read line; do
 					if [[ "$(downloadSite $line)" = "$INIT_ERROR" ]]; then
-					 	echo -e "Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\nUtiliser l'option : -i";
+					 	echo -e "Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\nUtilisez l'option : -i";
 					 	exit;
 					fi
 				done < $CAMPAINGN_FILE;
@@ -900,12 +931,15 @@ function main() {
 				fi
 
 				addCampaign $line;
-				
 				shift 5;
 		;;
-	"-e")		extractAll;
+	"-e")		if [[ "$(extractAll)" -eq "-1" ]]; then
+					echo -e "Il n'y a aucune donnée à extraire...\nUtilisez l'option : -d";
+				fi
 		;;
-	"-m")		fusion $1;
+	"-m")		if [[ "$(fusion $2)" -eq "-1" ]]; then
+					echo -e "Il n'y a aucune donnée à fusionner...\nUtilisez l'option : -e";
+				fi
 				shift 1;
 		;;
 	*)			echo -e "Option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
@@ -918,7 +952,7 @@ function main() {
 }
 
 
-#============================ EXEC ============================
+#============================= EXEC =============================
 
 if [[ "$#" -lt 1 ]]; then
 	echo -e "$USAGE";
