@@ -330,7 +330,7 @@ function checkArgsCampaign() {
 	fi
 
 	line="$site $lettre $genre $debut $fin";
-	echo $line;
+	echo "$line";
 }
 
 
@@ -465,21 +465,20 @@ function download() {
 	if [[ ! -d "$DOWNLOAD_REP/" ]]; then
 		mkdir "$DOWNLOAD_REP";
 	elif [[ -e "$file_path" ]]; then
-		echo 1;
+		echo "1";
 		return;
 	fi
 
 	curl -o "$file_path" "$1" 2>/dev/null;
 
-	echo "Téléchargement en cours (je ne dois pas étre là)" >&2;
-
+	#echo "Téléchargement en cours (je ne dois pas étre là)" >&2;
 
 	if [[ ! -e "$file_path" ]]; then
-		echo -1;
+		echo "-1";
 		return;
 	fi
 
-	echo 0;
+	echo "0";
 }
 
 
@@ -622,7 +621,7 @@ function downloadSite() {
 		status=$(download $p_url $fileName);
 
 		if [[ "$status" -lt "0" ]]; then
-			echo "Erreur de téléchargement de la page : $p_url" >&2;
+			echo "[WARNING] Download error for the page : $p_url" >&2;
 		fi
 	done
 
@@ -786,7 +785,7 @@ function extractPage() {
 			;;
 		"4")	fileExtract=$(extractPrenoms $1);
 			;;
-		*)		echo "-1";
+		*)		echo -1;
 				return;
 			;;
 	esac
@@ -794,7 +793,7 @@ function extractPage() {
 	fileExtract=$(echo "$fileExtract" | sed "s/&#233;/é/g");
 	fileExtract=$(echo "$fileExtract" | sed "s/&#232;/è/g");
 
-	echo "$fileExtract";
+	echo $fileExtract;
 }
 
 
@@ -814,7 +813,7 @@ function extractAll() {
 	fi
 
 	if [[ ! -d "$DOWNLOAD_REP" ]]; then
-		echo "-1";
+		echo -1;
 		return;
 	fi
 
@@ -832,11 +831,11 @@ function extractAll() {
 		if [[ ! "$data" = "-1" ]]; then
 			echo "$data" > "$EXTRACT_REP/$eFileName";
 		else
-			echo "La page : $filePath n'a pas pu etre extraite" >&2;
+			echo "[WARNING] Can not process the file : $filePath" >&2;
 		fi
 	done
 
-	echo "0";
+	echo 0;
 }
 
 
@@ -857,13 +856,13 @@ function fusion() {
 
 	: '
 	if [[ ! -e "$CAMPAINGN_FILE" ]]; then
-		echo "-1";
+		echo -1;
 		return;
 	fi
 	'
 
 	if [[ ! -d "$EXTRACT_REP" ]]; then
-		echo "-1";
+		echo -1;
 		return;
 	fi
 
@@ -884,7 +883,7 @@ function fusion() {
 	# Save in output file
 	echo "$tmp" > "$destFile";
 
-	echo "0";
+	echo 0;
 }
 
 
@@ -922,7 +921,6 @@ function main() {
 	"-c") 		deleteCampaign;
 		;;
 	"-a") 		line=$(checkArgsCampaign $2 $3 $4 $5 $6);
-				
 				n="${line:0:2}";
 
 				if [ "-$(isNumeric ${n#-})" = "$n" ] && [ "$n" -lt "0" ]; then
