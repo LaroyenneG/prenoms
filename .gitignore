@@ -2,3 +2,6 @@ download/
 *.txt
 .tmp
 *.ext
+extract/
+analyse/
+*.ale

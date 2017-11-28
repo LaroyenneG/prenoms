@@ -14,19 +14,11 @@
 #        AUTHOR:  LAROYENNE Guillaume
 #       COMPANY:  ENSISA
 #       VERSION:  1.0
-#       CREATED:  ---
+#       CREATED:  19/11/2017
 #      REVISION:  ---
 #===============================================================================
 
 LANG="C"
-
-#===  FUNCTION  ================================================================
-#          NAME:
-#   DESCRIPTION:
-#    PARAMETERS:
-#       RETURNS:
-#===============================================================================
-
 
 HELP="./prenoms.bsh\n
 \t -i \t\t\t\t\t\t Initialisation\n
@@ -41,15 +33,23 @@ USAGE="Usage : ./prenoms.bsh [OPTION] ...";
 ARGS_ERROR=-64;
 INIT_ERROR=-77;
 
-WEB_SITES_FILE=".site.txt";
-CAMPAINGN_FILE=".campaign.txt";
 DOWNLOAD_REP="download";
 EXTRACT_REP="extract";
+ANALYSE_REP="analyse";
+
+WEB_SITES_FILE=".site.txt";
+CAMPAINGN_FILE=".campaign.txt";
 MOD_SITES_FILE=".mod.txt";
+TMP_FILE=".tmp";
+
 DOWN_EXT=".html";
+EXTRACT_EXT=".ext";
+ANALYSE_EXT=".ale";
+
+
 GENDER_B=("boy" "1" "garcon");
 GENDER_F=("girl" "2" "fille");
-TMP_FILE=".tmp";
+
 CODE_MAS="M";
 CODE_FEM="F";
 CODE_MIX="M/F";
@@ -128,6 +128,31 @@ function majuscule() {
 
 
 #===  FUNCTION  ================================================================
+#          NAME: getHTMLChlid
+#   DESCRIPTION: Return the contents of all html tags passed in parameter.
+#    PARAMETERS: htmlElement tag
+#       RETURNS: void
+#===============================================================================
+
+function getHTMLChlid() {
+
+	if [[ $# -ne 2 ]]; then
+		echo "[ANOMALY] invalid argument number in getHTMLChlid()" >&2;
+		exit;
+	fi
+
+	tag=$2;
+
+	echo "$1" | sed -n '/<'"$tag"'>/,/<\/'"$tag"'>/ {
+               s/^.*<'"$tag"'>//
+               s/<\/'"$tag"'>.*$//
+               p
+          }';
+}
+
+
+
+#===  FUNCTION  ================================================================
 #          NAME: initialization
 #   DESCRIPTION: Creates the initialization files. 
 #    PARAMETERS: void
@@ -157,7 +182,7 @@ function initialization() {
 		echo "1 - -";
 		echo "1 2 -";
 		echo "1 2 -";
-		echo "1 - +";
+		echo "1 2 +";
 		echo "1 - +";
 		echo "1 1 +";
 		echo "2 1 +";
@@ -330,7 +355,7 @@ function checkArgsCampaign() {
 	fi
 
 	line="$site $lettre $genre $debut $fin";
-	echo "$line";
+	echo $line;
 }
 
 
@@ -361,7 +386,7 @@ function printCampaignErrors() {
 
 	lines=$1;
 
-	echo "Il y a des paramètres invalide dans la campagne :";
+	echo -e "Il y a des paramètres invalide dans la campagne :";
 
 	for line in $lines; do
 		case $line in
@@ -384,9 +409,12 @@ function printCampaignErrors() {
 		"-9")			echo -e "\t -Le site demandé nécessite des paramétres de page";
 			;;
 		*)				echo "Invalid value : [$line]" >&2;
+						exit;
 			;;
 		esac
 	done
+
+	echo "";
 }
 
 
@@ -410,7 +438,7 @@ function addCampaign() {
 		string+=" ${!i}";
 	done
 
-	echo $string >> $CAMPAINGN_FILE;
+	echo "$string" >> $CAMPAINGN_FILE;
 }
 
 
@@ -439,6 +467,10 @@ function deleteCampaign() {
 
 	if [[ -d "$EXTRACT_REP" ]]; then
 		rm -r "$EXTRACT_REP";
+	fi
+
+	if [[ -d "$ANALYSE_REP" ]]; then
+		rm -r "$ANALYSE_REP";
 	fi
 }
 
@@ -474,11 +506,11 @@ function download() {
 	#echo "Téléchargement en cours (je ne dois pas étre là)" >&2;
 
 	if [[ ! -e "$file_path" ]]; then
-		echo "-1";
+		echo -1;
 		return;
 	fi
 
-	echo "0";
+	echo 0;
 }
 
 
@@ -507,7 +539,7 @@ function reformatURL() {
 	url="${url//%gender%/$gender}";
 	url="${url//%page%/$page}";
 
-	echo "$url";
+	echo $url;
 }
 
 
@@ -553,7 +585,6 @@ function getFileNameAndURL() {
 		if [[ "$modLetter" = "2" ]]; then
 			letter=$(expr $(echo -n "$letter" | od -An -tuC) - 96);
 		fi
-
 	else
 		letter="-";
 	fi
@@ -561,11 +592,15 @@ function getFileNameAndURL() {
 	fileName+="${letter}_";
 
 	modGender=$(echo "$mod" | awk {'print $2'});
+	
 	if [[ ! "$modGender" = "-" ]]; then
-		if [[ "$gender" = "1" ]]; then
+		if [[ "$gender" = "0" ]]; then
 			gender=${GENDER_B[$modGender]};
-		else
+		elif [[ "$gender" = "1" ]]; then
 			gender=${GENDER_F[$modGender]};
+		else
+			echo "[ANOMALY] invalid gender code">&2;
+			exit;
 		fi
 	else
 		gender="-";
@@ -621,36 +656,11 @@ function downloadSite() {
 		status=$(download $p_url $fileName);
 
 		if [[ "$status" -lt "0" ]]; then
-			echo "[WARNING] Download error for the page : $p_url" >&2;
+			echo "[WARNING] download error for the page : $p_url" >&2;
 		fi
 	done
 
 	echo 0;
-}
-
-
-
-#===  FUNCTION  ================================================================
-#          NAME: getHTMLChlid
-#   DESCRIPTION: 
-#    PARAMETERS: htmlElement tag
-#       RETURNS: void
-#===============================================================================
-
-function getHTMLChlid() {
-
-	if [[ $# -ne 2 ]]; then
-		echo "[ANOMALY] invalid argument number in getHTMLChlid()" >&2;
-		exit;
-	fi
-
-	tag=$2;
-
-	echo "$1" | sed -n '/<'"$tag"'>/,/<\/'"$tag"'>/ {
-               s/^.*<'"$tag"'>//
-               s/<\/'"$tag"'>.*$//
-               p
-          }';
 }
 
 
@@ -757,9 +767,11 @@ function extractPrenoms() {
 
    		name="${line#*>}";
    		name="${name%<*}";
+
    		echo -e "$gender\t$name";
 	done
 }
+
 
 
 #===  FUNCTION  ================================================================
@@ -793,7 +805,7 @@ function extractPage() {
 	fileExtract=$(echo "$fileExtract" | sed "s/&#233;/é/g");
 	fileExtract=$(echo "$fileExtract" | sed "s/&#232;/è/g");
 
-	echo $fileExtract;
+	echo "$fileExtract";
 }
 
 
@@ -825,9 +837,9 @@ function extractAll() {
 
 		eFileName="${filePath%.*}";
 		eFileName="${eFileName#*/}";
-		eFileName+=".ext";
-
+		eFileName+="$EXTRACT_EXT";
 		data=$(extractPage $filePath);
+
 		if [[ ! "$data" = "-1" ]]; then
 			echo "$data" > "$EXTRACT_REP/$eFileName";
 		else
@@ -836,6 +848,81 @@ function extractAll() {
 	done
 
 	echo 0;
+}
+
+
+
+#===  FUNCTION  ================================================================
+#          NAME: analyse
+#   DESCRIPTION:
+#    PARAMETERS: site letter gender start end 
+#       RETURNS:
+#===============================================================================
+
+function analyse() {
+
+	if [[ $# -ne 5 ]]; then
+		echo "[ANOMALY] invalid argument number in analyse()" >&2;
+		exit;
+	fi
+
+	if [[ ! -e "$WEB_SITES_FILE" ]]; then
+		echo $INIT_ERROR;
+		return;	
+	fi
+
+	if [[ ! -d "$EXTRACT_REP" ]]; then
+		echo -2;
+		return;
+	fi
+
+	if [[ ! -d "$ANALYSE_REP" ]]; then
+		mkdir "$ANALYSE_REP";
+	fi
+
+	site=$1;
+	letter=$2;
+	gender=$3;
+	debut=$4;
+	fin=$5;
+
+	modP=$(sed -n "$site"'p' "$MOD_SITES_FILE");
+	if [[ $(echo "$modP" | awk {'print $3'}) = "-" ]]; then
+		debut=1;
+		fin=1;
+	fi
+
+	for (( page = $debut; page <= $fin; page++ )); do
+
+		fileAurl=$(getFileNameAndURL $site $letter $gender $page);
+		fileName=$(echo "$fileAurl" | awk {'print $1'});
+
+		eFilePath="$EXTRACT_REP/${fileName}$EXTRACT_EXT";
+
+		if [[ ! -e "$eFilePath" ]]; then
+			echo "[ANOMALY] File $fileName not exist" >&2;
+			exit;
+		fi
+
+		data=$(cat "$eFilePath");
+
+		gMod=$(echo "$fileName" | cut -d'|' -f3);
+		
+		if [[ "$gMod" = "-" ]]; then
+			if [[ "$gender" -eq "1" ]]; then
+				data=$(echo "$data" | sed "/$CODE_MAS/d");
+			elif [[ "$gender" -eq "0" ]]; then
+				data=$(echo "$data" | sed "/$CODE_FEM/d");
+			else
+				echo "[ANOMALY] invalid format campaign file">&2;
+				exit;
+			fi
+		fi
+
+		aFileName="${site}_${letter}_${gender}_${page}${ANALYSE_EXT}";
+
+		echo "$data" > "$ANALYSE_REP/$aFileName";
+	done
 }
 
 
@@ -854,14 +941,7 @@ function fusion() {
 		exit;	
 	fi
 
-	: '
-	if [[ ! -e "$CAMPAINGN_FILE" ]]; then
-		echo -1;
-		return;
-	fi
-	'
-
-	if [[ ! -d "$EXTRACT_REP" ]]; then
+	if [[ ! -d "$ANALYSE_REP" ]]; then
 		echo -1;
 		return;
 	fi
@@ -869,7 +949,7 @@ function fusion() {
 	tmp="";
 	destFile="$1";
 
-	for filePath in $EXTRACT_REP/*; do
+	for filePath in $ANALYSE_REP/*; do
 		tmp+="$(cat "$filePath")\n";
 	done
 
@@ -881,7 +961,7 @@ function fusion() {
 	tmp="$(echo "$tmp" | sort +1 -d -f)";
 
 	# Save in output file
-	echo "$tmp" > "$destFile";
+	echo "$tmp" > $destFile;
 
 	echo 0;
 }
@@ -911,8 +991,8 @@ function main() {
 					exit;
 				fi
 
-				while read line; do
-					if [[ "$(downloadSite $line)" = "$INIT_ERROR" ]]; then
+				while read camp; do
+					if [[ "$(downloadSite $camp)" = "$INIT_ERROR" ]]; then
 					 	echo -e "Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\nUtilisez l'option : -i";
 					 	exit;
 					fi
@@ -933,6 +1013,15 @@ function main() {
 		;;
 	"-e")		if [[ "$(extractAll)" -eq "-1" ]]; then
 					echo -e "Il n'y a aucune donnée à extraire...\nUtilisez l'option : -d";
+				else
+					while read camp; do
+						status=$(analyse $camp);
+						
+						if [[ "$status" -lt 0 ]]; then
+					 		echo -e "Erorr";
+					 		exit;
+						fi
+					done < $CAMPAINGN_FILE;
 				fi
 		;;
 	"-m")		if [[ "$(fusion $2)" -eq "-1" ]]; then
