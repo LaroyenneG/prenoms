@@ -1,3 +1,4 @@
 download/
 *.txt
 .tmp
+*.ext

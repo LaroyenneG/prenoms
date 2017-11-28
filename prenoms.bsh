@@ -187,9 +187,9 @@ function getAllSiteName() {
 
 	string="";
 	for line in $(cat "$WEB_SITES_FILE"); do
-		tpm=${line#*//};
-		tpm=${tpm%/*};
-		tpm=${tpm#*.};
+		tpm="${line#*//}";
+		tpm="${tpm%/*}";
+		tpm="${tpm#*.}";
 		string+=" ${tpm%.*}";
 	done
 
@@ -436,6 +436,10 @@ function deleteCampaign() {
 	if [[ -d "$DOWNLOAD_REP/" ]]; then
 		rm -r "$DOWNLOAD_REP";
 	fi
+
+	if [[ -d "$EXTRACT_REP" ]]; then
+		rm -r "$EXTRACT_REP";
+	fi
 }
 
 
@@ -500,11 +504,11 @@ function reformatURL() {
 	gender=$3;
 	page=$4;
 
-	url=${url//%letter%/$letter};
-	url=${url//%gender%/$gender};
-	url=${url//%page%/$page};
+	url="${url//%letter%/$letter}";
+	url="${url//%gender%/$gender}";
+	url="${url//%page%/$page}";
 
-	echo $url;
+	echo "$url";
 }
 
 
@@ -513,7 +517,7 @@ function reformatURL() {
 #          NAME: getFileNameAndURL
 #   DESCRIPTION: 
 #    PARAMETERS: site letter gender page
-#       RETURNS: filename URL
+#       RETURNS: fileName URL
 #===============================================================================
 
 function getFileNameAndURL() {
@@ -668,12 +672,46 @@ function extractAujourdhui() {
 
 	tpm=$(sed -n '/<table class="defaultText" width="400" border="0" cellpadding="4" style="margin-left:10px;">/,/<\/table>/p' $1);
 	tpm=$(echo "$tpm" | sed -e 's/<td valign="top">/<td>/g');
-	tpm=$(getHTMLChlid "$tpm" "td");
-	tpm=$(getHTMLChlid "$tpm" "b");
-	tpm=$(echo "$tpm" | tr -d '\n');
+	
+	tpm=$(getHTMLChlid "$tpm" "tr");
+	#Supression de la balsie de tête du tableau
+	tpm=$(echo "$tpm" | sed '1,13d'); 
 
-	echo "$tpm";
+	tpm=$(echo "$tpm" | sed '/align="center"/d');
+	tpm=$(echo "$tpm" | sed '/<td>/d');
+	tpm=$(echo "$tpm" | sed '/<\/td>/d');
+	tpm=$(echo "$tpm" | sed '/span class/d');
 
+
+	#Suppression de toutes les lignes vides
+	tpm=$(echo "$tpm" | sed '/^$/d');
+	tpm=$(echo "$tpm" | sed '/./!d');
+	tpm=$(echo "$tpm" | sed  's/^$//g');
+
+	count=0;
+	buffer="";
+	name="";
+
+	echo "$tpm" | while read line; do   
+   		
+		if [[ "$count" = "0" ]]; then
+			name=${name%*-};
+			#echo "$name" >&2;
+		fi
+
+		if [[ "$count" -eq "1" ]]; then
+			name+="$(getHTMLChlid "$line" "b")";
+			#echo "$name";
+		fi
+
+		if [[ "$count" -eq "2" ]]; then
+			echo "$name";
+			name="";
+		fi
+
+   		count=$(expr $count + 1);
+   		count=$(expr $count % 3);
+	done
 }
 
 
@@ -718,7 +756,7 @@ function extractPrenoms() {
 #===  FUNCTION  ================================================================
 #          NAME: extractPage
 #   DESCRIPTION: 
-#    PARAMETERS: HTMLpageName
+#    PARAMETERS: HTMLpagePath
 #       RETURNS: void
 #===============================================================================
 
@@ -729,25 +767,64 @@ function extractPage() {
 		exit;
 	fi
 
-	site=$(echo $1 | cut -d'_' -f1);
-	lettre=$(echo $1 | cut -d'_' -f2);
-	genre=$(echo $1 | cut -d'_' -f3);
-	page=$(echo $1 | cut -d'_' -f4);
+	fileName="${1#*/}";
+	site=$(echo $fileName | cut -d'_' -f1);
+	fileExtract="";
 
 	case $site in
-		"1")	extractAujourdhui $1;
+		"1")	fileExtract=$(extractAujourdhui $1);
 			;;
-		"4")	extractPrenoms $1;
+		"4")	fileExtract=$(extractPrenoms $1);
 			;;
-		*)		echo "Ce site n'est pas géré pour l'extration :-(";
+		*)		echo "-1";
+				return;
 			;;
 	esac
 
+	fileExtract=$(echo "$fileExtract" | sed "s/&#233;/é/g");
+	fileExtract=$(echo "$fileExtract" | sed "s/&#232;/è/g");
 
-	echo $site;
-
+	echo "$fileExtract";
 }
 
+
+
+#===  FUNCTION  ================================================================
+#          NAME: extractAll
+#   DESCRIPTION: 
+#    PARAMETERS: void
+#       RETURNS: void
+#===============================================================================
+
+function extractAll() {
+
+	if [[ $# -ne 0 ]]; then
+		echo "[ANOMALY] invalid argument number in extractAll()" >&2;
+		exit;
+	fi
+
+	if [[ ! -d "$DOWNLOAD_REP" ]]; then
+		return;
+	fi
+
+	if [[ ! -d "$EXTRACT_REP" ]]; then
+		mkdir "$EXTRACT_REP";
+	fi
+
+	for filePath in $DOWNLOAD_REP/*; do
+
+		eFileName="${filePath%.*}";
+		eFileName="${eFileName#*/}";
+		eFileName+=".ext";
+
+		data=$(extractPage $filePath);
+		if [[ ! "$data" = "-1" ]]; then
+			echo "$data" > "$EXTRACT_REP/$eFileName";
+		else
+			echo "Extraction error for : $filePath" >&2;
+		fi
+	done
+}
 
 
 #===  FUNCTION  ================================================================
@@ -784,7 +861,7 @@ function main() {
 		;;
 	"-a") 		line=$(checkArgsCampaign $2 $3 $4 $5 $6);
 				
-				n=${line:0:2};
+				n="${line:0:2}";
 
 				if [ "-$(isNumeric ${n#-})" = "$n" ] && [ "$n" -lt "0" ]; then
 					printCampaignErrors "$line";
@@ -795,7 +872,7 @@ function main() {
 				
 				shift 5;
 		;;
-	"-e")		echo -e "-e Option non géré";
+	"-e")		extractAll;
 		;;
 	"-m")		echo -e "-m Option non géré";
 		;;
@@ -809,13 +886,12 @@ function main() {
 }
 
 
-#=========== run ==============
+#============================ EXEC ============================
 
 if [[ "$#" -lt 1 ]]; then
 	echo -e "$USAGE";
 	exit;
 fi
 
-#main $*;
+main $*;
 
-extractPrenoms $1
