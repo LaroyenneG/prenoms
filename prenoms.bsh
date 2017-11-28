@@ -691,22 +691,32 @@ function extractAujourdhui() {
 	count=0;
 	buffer="";
 	name="";
+	gender="";
 
 	echo "$tpm" | while read line; do   
    		
 		if [[ "$count" = "0" ]]; then
-			name=${name%*-};
-			#echo "$name" >&2;
+			
+			gender="${line%-*}";
+			gender="${gender#*-}";
+
+			if [[ "$gender" = "boy" ]]; then
+				gender="$CODE_MAS";
+			elif [[ "$gender" = "girl" ]]; then
+				gender="$CODE_FEM";
+			elif [[ "$gender" = "mixt" ]]; then
+				gender="$CODE_MIX";
+			else
+				echo "Invalid gender code [$gender]" >&2;
+			fi
 		fi
 
 		if [[ "$count" -eq "1" ]]; then
-			name+="$(getHTMLChlid "$line" "b")";
-			#echo "$name";
+			name="$(getHTMLChlid "$line" "b")";
 		fi
 
 		if [[ "$count" -eq "2" ]]; then
-			echo "$name";
-			name="";
+			echo -e "$gender\t$name";
 		fi
 
    		count=$(expr $count + 1);
@@ -821,7 +831,7 @@ function extractAll() {
 		if [[ ! "$data" = "-1" ]]; then
 			echo "$data" > "$EXTRACT_REP/$eFileName";
 		else
-			echo "Extraction error for : $filePath" >&2;
+			echo "La page : $filePath n'a pas pu etre extraite" >&2;
 		fi
 	done
 }
