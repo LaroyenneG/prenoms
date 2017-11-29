@@ -437,7 +437,7 @@ function addCampaign() {
 
 	# [1] Section critique, elle verrouille le traitement des sites non gérés (autre que 1 et 4).
 	# En cas d'ajout d'un nouveau site elle doit être modifiée.
-	if [ ! "$site" = "1" ] && [ ! "$site" = "4" ]; then
+	if [ ! "$1" = "1" ] && [ ! "$1" = "4" ]; then
 		return;
 	fi
 	# [1]
