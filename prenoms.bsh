@@ -824,7 +824,7 @@ function extractAll() {
 		exit;
 	fi
 
-	if [[ ! -d "$DOWNLOAD_REP" ]]; then
+	if [ ! -d "$DOWNLOAD_REP" ] || [ "$(ls -A $DOWNLOAD_REP | wc -c)" -eq 0 ]; then
 		echo -1;
 		return;
 	fi
@@ -871,7 +871,7 @@ function analyse() {
 		return;	
 	fi
 
-	if [[ ! -d "$EXTRACT_REP" ]]; then
+	if [ ! -d "$EXTRACT_REP" ] || [ "$(ls -A $EXTRACT_REP | wc -c)" -eq 0 ]; then
 		echo -2;
 		return;
 	fi
@@ -1011,9 +1011,7 @@ function main() {
 				addCampaign $line;
 				shift 5;
 		;;
-	"-e")		if [[ "$(extractAll)" -eq "-1" ]]; then
-					echo -e "Il n'y a aucune donnée à extraire...\nUtilisez l'option : -d";
-				else
+	"-e")		if [[ "$(extractAll)" -ne "-1" ]]; then
 					while read camp; do
 						status=$(analyse $camp);
 						
@@ -1022,6 +1020,9 @@ function main() {
 					 		exit;
 						fi
 					done < $CAMPAINGN_FILE;
+
+				else
+					echo -e "Il n'y a aucune donnée à extraire...\nUtilisez l'option : -d";
 				fi
 		;;
 	"-m")		if [[ "$(fusion $2)" -eq "-1" ]]; then
