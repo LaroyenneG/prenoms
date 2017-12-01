@@ -691,16 +691,10 @@ function extractAujourdhui() {
 	#Supression de la balsie de tête du tableau
 	tmp=$(echo "$tmp" | sed '1,13d'); 
 
-	tmp=$(echo "$tmp" | sed '/align="center"/d');
-	tmp=$(echo "$tmp" | sed '/<td>/d');
-	tmp=$(echo "$tmp" | sed '/<\/td>/d');
-	tmp=$(echo "$tmp" | sed '/span class/d');
-
+	tmp=$(echo "$tmp" | sed '/align="center"/d' | sed '/<td>/d' | sed '/<\/td>/d' | sed '/span class/d');
 
 	#Suppression de toutes les lignes vides
-	tmp=$(echo "$tmp" | sed '/^$/d');
-	tmp=$(echo "$tmp" | sed '/./!d');
-	tmp=$(echo "$tmp" | sed  's/^$//g');
+	tmp=$(echo "$tmp" | sed '/^$/d' | sed '/./!d' | sed  's/^$//g');
 
 	count=0;
 	buffer="";
@@ -734,8 +728,7 @@ function extractAujourdhui() {
 			echo -e "$gender\t$name";
 		fi
 
-   		count=$(expr $count + 1);
-   		count=$(expr $count % 3);
+   		count=$(expr $(expr $count + 1) % 3);
 	done
 }
 
