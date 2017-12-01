@@ -412,9 +412,11 @@ function printErrors() {
 			;;
 		"-14")			echo -e "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtilisez l'option : -a";
 			;;
+		"-15")			echo -e "Option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
+			;;
 		"$INIT_ERROR")	echo -e "Vous n'avez pas initialisé le programme...\nUtiliser l'option : -i";
 			;;
-		"ARGS_ERROR")	echo -e "Nombre d'argument invalide...\nUtilisez --help pour plus d'informations";
+		"$ARGS_ERROR")	echo -e "Nombre d'argument invalide...\nUtilisez --help pour plus d'informations";
 			;;
 		*)				echo "Invalid value : [$line]" >&2;
 						exit;
@@ -1042,8 +1044,8 @@ function main() {
 				shift;
 		;;
 
-	*)			echo -e "Option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
-				return;
+	*)			printErrors "-15";
+				exit;
 		;;
 	esac
 
