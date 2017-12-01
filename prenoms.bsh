@@ -112,6 +112,7 @@ function isCharacter() {
 #===============================================================================
 
 function minuscule() {
+
 	echo $1 | tr [:upper:] [:lower:];
 }
 
@@ -125,6 +126,7 @@ function minuscule() {
 #===============================================================================
 
 function majuscule() {
+
 	echo $1 | tr [:lower:] [:upper:];
 }
 
@@ -185,7 +187,7 @@ function initialization() {
 		echo "1 - -";
 		echo "1 2 -";
 		echo "1 2 -";
-		echo "1 2 +";
+		echo "1 1 +";
 		echo "1 - +";
 		echo "1 1 +";
 		echo "2 1 +";
@@ -608,9 +610,9 @@ function getFileNameAndURL() {
 	modGender=$(echo "$mod" | awk {'print $2'});
 	
 	if [[ ! "$modGender" = "-" ]]; then
-		if [[ "$gender" = "0" ]]; then
+		if [[ "$gender" = "1" ]]; then
 			gender=${GENDER_B[$modGender]};
-		elif [[ "$gender" = "1" ]]; then
+		elif [[ "$gender" = "0" ]]; then
 			gender=${GENDER_F[$modGender]};
 		else
 			echo "[ANOMALY] invalid gender code">&2;
@@ -655,8 +657,7 @@ function downloadSite() {
 	debut=$4;
 	fin=$5;
 
-	modP=$(sed -n "$site"'p' "$MOD_SITES_FILE");
-	if [[ $(echo "$modP" | awk {'print $3'}) = "-" ]]; then
+	if [[ $(sed -n "$site"'p' "$MOD_SITES_FILE" | awk {'print $3'}) = "-" ]]; then
 		debut=1;
 		fin=1;
 	fi
@@ -666,7 +667,6 @@ function downloadSite() {
 		fileAurl=$(getFileNameAndURL $site $letter $gender $page);
 		fileName=$(echo "$fileAurl" | awk {'print $1'});
 		p_url=$(echo "$fileAurl" | awk {'print $2'});
-
 		status=$(download $p_url $fileName);
 
 		if [[ "$status" -lt "0" ]]; then
@@ -819,9 +819,11 @@ function extractPage() {
 			;;
 	esac
 
-	# Changement des caractéres html
+	# Changement des caractéres html &#239;
 	fileExtract=$(echo "$fileExtract" | sed "s/&#233;/é/g");
 	fileExtract=$(echo "$fileExtract" | sed "s/&#232;/è/g");
+	fileExtract=$(echo "$fileExtract" | sed "s/&#235;/ë/g");
+	fileExtract=$(echo "$fileExtract" | sed "s/&#239;/ï/g");
 
 	echo "$fileExtract";
 }
