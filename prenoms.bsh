@@ -13,7 +13,7 @@
 #         NOTES:  ---
 #        AUTHOR:  LAROYENNE Guillaume
 #       COMPANY:  ENSISA
-#       VERSION:  2.0
+#       VERSION:  3.0
 #       CREATED:  19/11/2017
 #      REVISION:  01/12/2017
 #===============================================================================
@@ -792,14 +792,8 @@ function extractPage() {
 			;;
 	esac
 
-	# Netoyage
-	fileExtract=$(echo "$fileExtract" | sed '/^$/d');
-
-	# Changement des caractéres html &#239;
-	fileExtract=$(echo "$fileExtract" | sed "s/&#233;/é/g");
-	fileExtract=$(echo "$fileExtract" | sed "s/&#232;/è/g");
-	fileExtract=$(echo "$fileExtract" | sed "s/&#235;/ë/g");
-	fileExtract=$(echo "$fileExtract" | sed "s/&#239;/ï/g");
+	# Netoyage et changement des caractéres html 
+	fileExtract=$(echo "$fileExtract" | sed '/^$/d' | sed "s/&#233;/é/g" | sed "s/&#232;/è/g" | sed "s/&#235;/ë/g" | sed "s/&#239;/ï/g");
 
 	echo "$fileExtract";
 }
