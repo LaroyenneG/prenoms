@@ -41,7 +41,6 @@ ANALYSIS_REP="analysis";
 WEB_SITES_FILE=".site.txt";
 CAMPAINGN_FILE=".campaign.txt";
 MOD_SITES_FILE=".mod.txt";
-TMP_FILE=".tmp";
 
 DOWN_EXT=".html";
 EXTRACT_EXT=".ext";
@@ -378,29 +377,27 @@ function printErrors() {
 		return;
 	fi
 
-	if [[ "$(echo $1 | wc -w)" -gt "1" ]]; then
-		echo -e "Il y a des paramètres invalide dans la campagne :";
-	fi
+	echo "Attention erreur de commande :";
 
 	for line in $1; do
 		case $line in
-		"-1")			echo -e "\t- Le numéro du site est invalide";
+		"-1")			echo -e "Le numéro du site est invalide";
 			;;
-		"-2")			echo -e "\t- Le nom du site est invalide";
+		"-2")			echo -e "Le nom du site est invalide";
 			;;
-		"-3")			echo -e "\t- Le paramètre lettre est invalide";
+		"-3")			echo -e "Le paramètre lettre est invalide";
 			;;
-		"-4")			echo -e "\t- Le paramètres genre est invalide";
+		"-4")			echo -e "Le paramètres genre est invalide";
 			;;
-		"-5")			echo -e "\t- Le paramètre debut est invalide";
+		"-5")			echo -e "Le paramètre debut est invalide";
 			;;
-		"-6")			echo -e "\t- Le paramètre fin est invalide";
+		"-6")			echo -e "Le paramètre fin est invalide";
 			;;
-		"-7")			echo -e "\t -Un numéro de page ne peut pas étre négatif";
+		"-7")			echo -e "Un numéro de page ne peut pas étre négatif";
 			;;
-		"-8")			echo -e "\t -Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
+		"-8")			echo -e "Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
 			;;
-		"-9")			echo -e "\t -Le site demandé nécessite des paramétres de page";
+		"-9")			echo -e "Le site demandé nécessite des paramétres de page";
 			;;
 		"-10")			echo -e "Il n'y a aucune donnée à fusionner...\nUtilisez l'option : -e";
 			;;
@@ -695,12 +692,11 @@ function extractAujourdhui() {
 	tmp=$(echo "$tmp" | sed -e 's/<td valign="top">/<td>/g');
 	
 	tmp=$(getHTMLChlid "$tmp" "tr");
-	#Supression de la balsie de tête du tableau
-	tmp=$(echo "$tmp" | sed '1,13d'); 
 
-	tmp=$(echo "$tmp" | sed '/align="center"/d' | sed '/<td>/d' | sed '/<\/td>/d' | sed '/span class/d');
+	# Récupération du contenue du tableau et nettoyage des éléments inutiles.
+	tmp=$(echo "$tmp" | sed '1,13d' | sed '/align="center"/d' | sed '/<td>/d' | sed '/<\/td>/d' | sed '/span class/d');
 
-	#Suppression de toutes les lignes vides
+	# Suppression de toutes les lignes vides.
 	tmp=$(echo "$tmp" | sed '/^$/d' | sed '/./!d' | sed  's/^$//g');
 
 	count=0;
@@ -1008,8 +1004,7 @@ function main() {
 	"-c") 		deleteCampaign;
 		;;
 
-	"-a") 		camp=$(checkArgsCampaign $2 $3 $4 $5 $6);
-				n="${camp:0:2}";
+	"-a") 		camp=$(checkArgsCampaign $2 $3 $4 $5 $6); n="${camp:0:2}";
 				if [ "-$(isNumeric ${n#-})" = "$n" ] && [ "$n" -lt "0" ]; then
 					printErrors "$camp";
 					exit;
