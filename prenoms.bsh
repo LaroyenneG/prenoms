@@ -27,7 +27,7 @@ HELP="./prenoms.bsh\n
 \t -a <site> <lettre> <genre> <debut> <fin> \t Ajout d’une nouvelle règle dans la campagne\n
 \t -d \t\t\t\t\t\t Téléchargement des fichiers décrits par toutes les règles de la campagne\n
 \t -e \t\t\t\t\t\t Extraction des prénoms et filtrages éventuels de tous les téléchargements\n
-\t -m <fihier> \t\t\t\t\t merge de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.";
+\t -m <fihier> \t\t\t\t\t Fusion de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.";
 
 USAGE="Usage : ./prenoms.bsh [OPTION] ...";
 
@@ -514,8 +514,6 @@ function download() {
 
 	curl -o "$file_path" "$1" 2>/dev/null;
 
-	#echo "Téléchargement en cours (je ne dois pas étre là)" >&2;
-
 	if [[ ! -e "$file_path" ]]; then
 		echo -1;
 		return;
@@ -574,8 +572,6 @@ function getFileNameAndURL() {
 		exit;
 	fi
 
-	fileName="";
-
 	site=$1;
 	letter=$2;
 	gender=$3;
@@ -584,7 +580,7 @@ function getFileNameAndURL() {
 	url=$(sed -n "$site"'p' "$WEB_SITES_FILE");
 	mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
 
-	fileName+="${site}_";
+	fileName="${site}_";
 
 	modLetter=$(echo "$mod" | awk {'print $1'});
 	if [[ ! "$modLetter" = "-" ]]; then
@@ -763,24 +759,11 @@ function extractPrenoms() {
 	tmp=$(getHTMLChlid "$tmp" "li");
 
 	echo "$tmp" | while read line; do
-		gender="${line#*(}";
-		gender="${gender%)*}";
-
-		case $gender in
-			"Masculin") gender="$CODE_MAS";
-				;;
-			"Feminin")	gender="$CODE_FEM";
-				;;
-			"Mixte") 	gender="$CODE_MIX";
-				;;
-			*)			echo "[ANOMALY]	invalid gender form www.prenoms.com" >&2;
-				;;
-		esac
 
    		name="${line#*>}";
    		name="${name%<*}";
 
-   		echo -e "$gender\t$name";
+   		echo "$name";
 	done
 }
 
@@ -844,7 +827,7 @@ function extractAll() {
 		exit;
 	fi
 
-	if [ ! -d "$DOWNLOAD_REP" ] || [ "$(ls -A $DOWNLOAD_REP | wc -c)" -eq 0 ]; then
+	if [ ! -d "$DOWNLOAD_REP" ] || [ "$(ls -A $DOWNLOAD_REP | wc -c)" -eq "0" ]; then
 		echo -1;
 		return;
 	fi
@@ -937,16 +920,32 @@ function analysis() {
 			gMod=$(echo "$fileName" | cut -d'_' -f3);
 
 			if [[ "$gMod" = "-" ]]; then
+
+				# Pour le site prenoms.aujourdhui.com suppression du genre non désiré
+
 				if [[ "$gender" -eq "0" ]]; then
 					data=$(echo "$data" | sed "/$CODE_MAS/d");
 				elif [[ "$gender" -eq "1" ]]; then
 					data=$(echo "$data" | sed "/$CODE_FEM/d");
 				else
 					echo "[ANOMALY] invalid format in campaign file">&2;
-				exit;
+					exit;
+				fi
+			else
+
+				# Pour le site www.prenoms.com on ajoute le genre dans la premiére colonne
+
+				if [[ "$gMod" = "0" ]]; then
+					data=$(echo "$data" | sed -e 's#^#'"${CODE_FEM}\t"' #');
+				elif [[ "$gMod" = "1" ]]; then
+					data=$(echo "$data" | sed -e 's#^#'"${CODE_MAS}\t"' #');
+				else
+					echo "[ANOMALY] invalid extract file name" >&2;
+					exit;
+				fi
 			fi
-		fi
-		echo "$data" > "$aFilePath";	
+
+		echo -e "$data" > "$aFilePath";	
 		fi
 	done
 }
@@ -967,27 +966,12 @@ function merge() {
 		exit;	
 	fi
 
-	if [[ ! -d "$ANALYSIS_REP" ]]; then
+	if [ ! -d "$ANALYSIS_REP" ] || [ "$(ls -A $ANALYSIS_REP | wc -c)" -eq "0" ]; then
 		echo -1;
 		return;
 	fi
 
-	tmp="";
-	destFile="$1";
-
-	for filePath in $ANALYSIS_REP/*; do
-		tmp+="$(cat "$filePath")\n";
-	done
-
-	# Clean tmp
-	tmp="$(echo -e "$tmp" | sed '$d')";
-	tmp="$(echo "$tmp" | sort -u)";
-	
-	# Order by dictionary
-	tmp="$(echo "$tmp" | sort +1 -d -f)";
-
-	# Save in output file
-	echo "$tmp" > $destFile;
+	echo "$(cat $ANALYSIS_REP/*  | sed '$d' | sort -u | sort +1 -d -f)" > $1;
 
 	echo 0;
 }
@@ -1058,7 +1042,7 @@ function main() {
 		;;
 
 	"-m")		if [[ "$(merge $2)" -eq "-1" ]]; then
-					echo -e "Il n'y a aucune donnée à mergener...\nUtilisez l'option : -e";
+					echo -e "Il n'y a aucune donnée à fusionner...\nUtilisez l'option : -e";
 				fi
 				shift 1;
 		;;
