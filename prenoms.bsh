@@ -929,9 +929,9 @@ function analysis() {
 				# Pour le site www.prenoms.com on ajoute le genre dans la premiére colonne
 
 				if [[ "$gMod" = "0" ]]; then
-					data=$(echo "$data" | sed -e 's#^#'"${CODE_FEM}\t"' #');
+					data=$(echo "$data" | sed -e 's#^#'"${CODE_FEM}\t"'#');
 				elif [[ "$gMod" = "1" ]]; then
-					data=$(echo "$data" | sed -e 's#^#'"${CODE_MAS}\t"' #');
+					data=$(echo "$data" | sed -e 's#^#'"${CODE_MAS}\t"'#');
 				else
 					echo "[ANOMALY] invalid extract file name" >&2;
 					exit;
