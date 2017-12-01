@@ -364,34 +364,25 @@ function checkArgsCampaign() {
 
 
 #===  FUNCTION  ================================================================
-#          NAME: printCampaignErrors
-#   DESCRIPTION: Informs the user of errors in his campaign.
+#          NAME: printErrors
+#   DESCRIPTION: Displays the error message corresponding to the error code 
+#				 passed in parameter.
 #    PARAMETERS: errors
 #       RETURNS: void
 #===============================================================================
 
-function printCampaignErrors() {
+function printErrors() {
 	
 	if [[ $# -ne 1 ]]; then
-		echo "[ANOMALY] invalid argument number in printCampaignErrors()" >&2;
+		echo "[ANOMALY] invalid argument number in printErrors()" >&2;
 		return;
 	fi
 
-	if [[ "$1" = "$INIT_ERROR" ]]; then
-		echo -e "Vous n'avez pas initialisé le programme...\nUtiliser l'option : -i";
-		return;
+	if [[ "$(echo $1 | wc -w)" -gt "1" ]]; then
+		echo -e "Il y a des paramètres invalide dans la campagne :";
 	fi
 
-	if [[ "$1" = "$ARGS_ERROR" ]]; then
-		echo -e "Nombre d'argument invalide...\nUtilisez --help pour plus d'informations";
-		return;
-	fi
-
-	lines=$1;
-
-	echo -e "Il y a des paramètres invalide dans la campagne :";
-
-	for line in $lines; do
+	for line in $1; do
 		case $line in
 		"-1")			echo -e "\t- Le numéro du site est invalide";
 			;;
@@ -410,6 +401,20 @@ function printCampaignErrors() {
 		"-8")			echo -e "\t -Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
 			;;
 		"-9")			echo -e "\t -Le site demandé nécessite des paramétres de page";
+			;;
+		"-10")			echo -e "Il n'y a aucune donnée à fusionner...\nUtilisez l'option : -e";
+			;;
+		"-11")			echo -e "Il n'y a aucune donnée à extraire...\nUtilisez l'option : -d";
+			;;
+		"-12")			echo -e "Vous ne pouvez pas extraire car vous n'avez pas de campagne\nUtilisez l'option : -a";
+			;;
+		"-13")			echo -e "Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\nUtilisez l'option : -i";
+			;;
+		"-14")			echo -e "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtilisez l'option : -a";
+			;;
+		"$INIT_ERROR")	echo -e "Vous n'avez pas initialisé le programme...\nUtiliser l'option : -i";
+			;;
+		"ARGS_ERROR")	echo -e "Nombre d'argument invalide...\nUtilisez --help pour plus d'informations";
 			;;
 		*)				echo "Invalid value : [$line]" >&2;
 						exit;
@@ -949,12 +954,12 @@ function analysis() {
 function merge() {
 
 	if [[ $# -ne 1 ]]; then
-		echo "[ANOMALY] invalid argument number in merge()" >&2;
+		echo $ARGS_ERROR;
 		exit;	
 	fi
 
 	if [ ! -d "$ANALYSIS_REP" ] || [ "$(ls -A $ANALYSIS_REP | wc -c)" -eq "0" ]; then
-		echo -1;
+		echo -10;
 		return;
 	fi
 
@@ -985,14 +990,14 @@ function main() {
 
 	"-i") 		initialization;
 		;;
-
+	
 	"-d") 		if [[ ! -e "$CAMPAINGN_FILE" ]]; then
-					echo -e "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtilisez l'option : -a";
+					printErrors "-14";
 					exit;
 				fi
 				while read camp; do
 					if [[ "$(downloadSite $camp)" = "$INIT_ERROR" ]]; then
-					 	echo -e "Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\nUtilisez l'option : -i";
+					 	printErrors "-13";
 					 	exit;
 					fi
 				done < $CAMPAINGN_FILE;
@@ -1004,7 +1009,7 @@ function main() {
 	"-a") 		camp=$(checkArgsCampaign $2 $3 $4 $5 $6);
 				n="${camp:0:2}";
 				if [ "-$(isNumeric ${n#-})" = "$n" ] && [ "$n" -lt "0" ]; then
-					printCampaignErrors "$camp";
+					printErrors "$camp";
 					exit;
 				fi
 				addCampaign $camp;
@@ -1013,7 +1018,7 @@ function main() {
 
 	"-e")		
 				if [[ ! -e "$CAMPAINGN_FILE" ]]; then
-					echo -e "Vous ne pouvez pas extraire car vous n'avez pas de campagne\nUtilisez l'option : -a";
+					printErrors "-12";
 					exit;
 				fi
 				if [[ "$(extractAll)" -ne "-1" ]]; then
@@ -1024,14 +1029,17 @@ function main() {
 						fi
 					done < $CAMPAINGN_FILE;
 				else
-					echo -e "Il n'y a aucune donnée à extraire...\nUtilisez l'option : -d";
+					printErrors "-11";
+					exit;
 				fi
 		;;
 
-	"-m")		if [[ "$(merge $2)" -eq "-1" ]]; then
-					echo -e "Il n'y a aucune donnée à fusionner...\nUtilisez l'option : -e";
+	"-m")		status=$(merge $2);
+				if [[ "$status" -lt "0" ]]; then
+					printErrors "$status";
+					exit;
 				fi
-				shift 1;
+				shift;
 		;;
 
 	*)			echo -e "Option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
