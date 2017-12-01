@@ -18,6 +18,7 @@
 #      REVISION:  01/12/2017
 #===============================================================================
 
+
 LANG="C"
 
 HELP="./prenoms.bsh\n
@@ -26,7 +27,7 @@ HELP="./prenoms.bsh\n
 \t -a <site> <lettre> <genre> <debut> <fin> \t Ajout d’une nouvelle règle dans la campagne\n
 \t -d \t\t\t\t\t\t Téléchargement des fichiers décrits par toutes les règles de la campagne\n
 \t -e \t\t\t\t\t\t Extraction des prénoms et filtrages éventuels de tous les téléchargements\n
-\t -m <fihier> \t\t\t\t\t Fusion de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.";
+\t -m <fihier> \t\t\t\t\t merge de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.";
 
 USAGE="Usage : ./prenoms.bsh [OPTION] ...";
 
@@ -46,16 +47,13 @@ DOWN_EXT=".html";
 EXTRACT_EXT=".ext";
 analysis_EXT=".ale";
 
-
-GENDER_B=("boy" "1" "garcon");
-GENDER_F=("girl" "2" "fille");
+GENDER_B=("boy" "1" "garcon" "0");
+GENDER_F=("girl" "2" "fille" "1");
 
 CODE_MAS="(M)";
 CODE_FEM="(F)";
 CODE_MIX="(M/F)";
 
-#____________________________Remarques_____________________________
-# Code genre pour les filles = 0, pour les garçon = 1
 
 
 #===  FUNCTION  ================================================================
@@ -187,7 +185,7 @@ function initialization() {
 		echo "1 - -";
 		echo "1 2 -";
 		echo "1 2 -";
-		echo "1 1 +";
+		echo "1 3 +";
 		echo "1 - +";
 		echo "1 1 +";
 		echo "2 1 +";
@@ -223,7 +221,7 @@ function getAllSiteName() {
 		string+=" ${tmp%.*}";
 	done
 
-	echo $string;
+	echo "$string";
 }
 
 
@@ -474,12 +472,9 @@ function deleteCampaign() {
 		rm -f "$CAMPAINGN_FILE";
 	fi
 
-	# Pour eviter les téléchargments inutiles.
-	: '
 	if [[ -d "$DOWNLOAD_REP/" ]]; then
 		rm -r "$DOWNLOAD_REP";
 	fi
-	'
 
 	if [[ -d "$EXTRACT_REP" ]]; then
 		rm -r "$EXTRACT_REP";
@@ -776,7 +771,9 @@ function extractPrenoms() {
 				;;
 			"Feminin")	gender="$CODE_FEM";
 				;;
-			*) 			gender="$CODE_MIX";
+			"Mixte") 	gender="$CODE_MIX";
+				;;
+			*)			echo "[ANOMALY]	invalid gender form www.prenoms.com" >&2;
 				;;
 		esac
 
@@ -819,6 +816,9 @@ function extractPage() {
 			;;
 	esac
 
+	# Netoyage
+	fileExtract=$(echo "$fileExtract" | sed '/^$/d');
+
 	# Changement des caractéres html &#239;
 	fileExtract=$(echo "$fileExtract" | sed "s/&#233;/é/g");
 	fileExtract=$(echo "$fileExtract" | sed "s/&#232;/è/g");
@@ -860,6 +860,7 @@ function extractAll() {
 		eFileName+="$EXTRACT_EXT";
 
 		if [[ ! -e "$EXTRACT_REP/$eFileName" ]]; then
+
 			data=$(extractPage $filePath);
 
 			if [[ ! "$data" = "-1" ]]; then
@@ -953,16 +954,16 @@ function analysis() {
 
 
 #===  FUNCTION  ================================================================
-#          NAME: fusion
+#          NAME: merge
 #   DESCRIPTION: destination_file 
 #    PARAMETERS: Merge all the analysis files in the file passed in parameter.
 #       RETURNS: status (integer)
 #===============================================================================
 
-function fusion() {
+function merge() {
 
 	if [[ $# -ne 1 ]]; then
-		echo "[ANOMALY] invalid argument number in fusion()" >&2;
+		echo "[ANOMALY] invalid argument number in merge()" >&2;
 		exit;	
 	fi
 
@@ -1056,8 +1057,8 @@ function main() {
 				fi
 		;;
 
-	"-m")		if [[ "$(fusion $2)" -eq "-1" ]]; then
-					echo -e "Il n'y a aucune donnée à fusionner...\nUtilisez l'option : -e";
+	"-m")		if [[ "$(merge $2)" -eq "-1" ]]; then
+					echo -e "Il n'y a aucune donnée à mergener...\nUtilisez l'option : -e";
 				fi
 				shift 1;
 		;;
