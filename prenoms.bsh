@@ -314,7 +314,6 @@ function checkArgsCampaign() {
 		if [ ! "$debut" = "no" ] && [ ! "$debut" = "-" ]; then
 			errors+=" -5";
 		fi
-
 		debut="-";
 	fi
 
@@ -343,12 +342,8 @@ function checkArgsCampaign() {
 
 	if [ ! "$debut" = "-" ] && [ "$debut" -lt "0" ]; then
 		errors+=" -7";
-		return;
-	fi
-
-	if [ ! "$fin" = "-" ] && [ ! "$debut" = "-" ] && [ ! "$fin" -ge "$debut" ]; then
+	elif [ ! "$fin" = "-" ] && [ ! "$debut" = "-" ] && [ ! "$fin" -ge "$debut" ]; then
 		errors+=" -8";
-		return;
 	fi
 
 	if [[ ! "$errors" = "" ]]; then
@@ -356,8 +351,7 @@ function checkArgsCampaign() {
 		return;
 	fi
 
-	line="$site $lettre $genre $debut $fin";
-	echo $line;
+	echo "$site $lettre $genre $debut $fin";
 }
 
 
@@ -377,43 +371,43 @@ function printErrors() {
 		return;
 	fi
 
-	echo "Attention erreur de commande :";
+	echo -e "\033[31m\nAttention erreur de commande :\n";
 
 	for line in $1; do
 		case $line in
-		"-1")			echo -e "Le numéro du site est invalide";
+		"-1")			echo -e "\t-Le numéro du site est invalide";
 			;;
-		"-2")			echo -e "Le nom du site est invalide";
+		"-2")			echo -e "\t-Le nom du site est invalide";
 			;;
-		"-3")			echo -e "Le paramètre lettre est invalide";
+		"-3")			echo -e "\t-Le paramètre lettre est invalide";
 			;;
-		"-4")			echo -e "Le paramètres genre est invalide";
+		"-4")			echo -e "\t-Le paramètres genre est invalide";
 			;;
-		"-5")			echo -e "Le paramètre debut est invalide";
+		"-5")			echo -e "\t-Le paramètre debut est invalide";
 			;;
-		"-6")			echo -e "Le paramètre fin est invalide";
+		"-6")			echo -e "\t-Le paramètre fin est invalide";
 			;;
-		"-7")			echo -e "Un numéro de page ne peut pas étre négatif";
+		"-7")			echo -e "\t-Un numéro de page ne peut pas étre négatif";
 			;;
-		"-8")			echo -e "Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
+		"-8")			echo -e "\t-Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
 			;;
-		"-9")			echo -e "Le site demandé nécessite des paramétres de page";
+		"-9")			echo -e "\t-Le site demandé nécessite des paramétres de page";
 			;;
-		"-10")			echo -e "Il n'y a aucune donnée à fusionner...\nUtilisez l'option : -e";
+		"-10")			echo -e "\t-Il n'y a aucune donnée à fusionner...\n\tUtilisez l'option : -e";
 			;;
-		"-11")			echo -e "Il n'y a aucune donnée à extraire...\nUtilisez l'option : -d";
+		"-11")			echo -e "\t-Il n'y a aucune donnée à extraire...\n\tUtilisez l'option : -d";
 			;;
-		"-12")			echo -e "Vous ne pouvez pas extraire car vous n'avez pas de campagne\nUtilisez l'option : -a";
+		"-12")			echo -e "\t-Vous ne pouvez pas extraire car vous n'avez pas de campagne\n\tUtilisez l'option : -a";
 			;;
-		"-13")			echo -e "Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\nUtilisez l'option : -i";
+		"-13")			echo -e "\t-Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\n\tUtilisez l'option : -i";
 			;;
-		"-14")			echo -e "Vous ne pouvez pas télécharger car vous n'avez pas de campagne\nUtilisez l'option : -a";
+		"-14")			echo -e "\t-Vous ne pouvez pas télécharger car vous n'avez pas de campagne\n\tUtilisez l'option : -a";
 			;;
-		"-15")			echo -e "Option invalide -- \nSaisissez « prenoms --help » pour plus d'informations.";
+		"-15")			echo -e "\t-Option invalide -- \n\tSaisissez « prenoms --help » pour plus d'informations.";
 			;;
-		"$INIT_ERROR")	echo -e "Vous n'avez pas initialisé le programme...\nUtiliser l'option : -i";
+		"$INIT_ERROR")	echo -e "\t-Vous n'avez pas initialisé le programme...\n\tUtiliser l'option : -i";
 			;;
-		"$ARGS_ERROR")	echo -e "Nombre d'argument invalide...\nUtilisez --help pour plus d'informations";
+		"$ARGS_ERROR")	echo -e "\t-Nombre d'argument invalide...\n\tUtilisez --help pour plus d'informations";
 			;;
 		*)				echo "Invalid value : [$line]" >&2;
 						exit;
@@ -421,7 +415,7 @@ function printErrors() {
 		esac
 	done
 
-	echo "";
+	echo -e "\033[0m";
 }
 
 
@@ -1009,6 +1003,7 @@ function main() {
 					printErrors "$camp";
 					exit;
 				fi
+
 				addCampaign $camp;
 				shift 5;
 		;;
