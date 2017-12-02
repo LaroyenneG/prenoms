@@ -63,12 +63,10 @@ CODE_MIX="(M/F)";
 #===============================================================================
 
 function isNumeric() {
-	
 	if [[ $# -ne 1 ]]; then
 		echo "";
 		return;
 	fi
-
 	echo $1 | grep "^[ [:digit:] ]*$";
 }
 
@@ -82,7 +80,6 @@ function isNumeric() {
 #===============================================================================
 
 function isCharacter() {
-
 	if [[ $# -ne 1 ]]; then
 		echo "";
 		return;
@@ -109,7 +106,6 @@ function isCharacter() {
 #===============================================================================
 
 function minuscule() {
-
 	echo $1 | tr [:upper:] [:lower:];
 }
 
@@ -123,7 +119,6 @@ function minuscule() {
 #===============================================================================
 
 function majuscule() {
-
 	echo $1 | tr [:lower:] [:upper:];
 }
 
@@ -137,7 +132,6 @@ function majuscule() {
 #===============================================================================
 
 function getHTMLChlid() {
-
 	if [[ $# -ne 2 ]]; then
 		echo "[ANOMALY] invalid argument number in getHTMLChlid()" >&2;
 		exit;
@@ -162,7 +156,6 @@ function getHTMLChlid() {
 #===============================================================================
 
 function initialization() {
-
 	if [[ $# -ne 0 ]]; then
 		echo "[ANOMALY] invalid argument number in initialization()" >&2;
 		exit;
@@ -202,7 +195,6 @@ function initialization() {
 #===============================================================================
 
 function getAllSiteName() {
-
 	if [[ $# -ne 0 ]]; then
 		echo "[ANOMALY] invalid argument number in getAllSiteName()" >&2;
 		exit;
@@ -365,49 +357,48 @@ function checkArgsCampaign() {
 #===============================================================================
 
 function printErrors() {
-	
 	if [[ $# -ne 1 ]]; then
 		echo "[ANOMALY] invalid argument number in printErrors()" >&2;
 		return;
 	fi
 
-	echo -e "\033[31m\nAttention erreur de commande :\n";
+	echo -e "\033[31m\n/!\ Attention erreur de commande :\n";
 
 	for line in $1; do
 		case $line in
-		"-1")			echo -e "\t-Le numéro du site est invalide";
+		"-1")			echo -e "\t- Le numéro du site est invalide";
 			;;
-		"-2")			echo -e "\t-Le nom du site est invalide";
+		"-2")			echo -e "\t- Le nom du site est invalide";
 			;;
-		"-3")			echo -e "\t-Le paramètre lettre est invalide";
+		"-3")			echo -e "\t- Le paramètre lettre est invalide";
 			;;
-		"-4")			echo -e "\t-Le paramètres genre est invalide";
+		"-4")			echo -e "\t- Le paramètres genre est invalide";
 			;;
-		"-5")			echo -e "\t-Le paramètre debut est invalide";
+		"-5")			echo -e "\t- Le paramètre debut est invalide";
 			;;
-		"-6")			echo -e "\t-Le paramètre fin est invalide";
+		"-6")			echo -e "\t- Le paramètre fin est invalide";
 			;;
-		"-7")			echo -e "\t-Un numéro de page ne peut pas étre négatif";
+		"-7")			echo -e "\t- Un numéro de page ne peut pas étre négatif";
 			;;
-		"-8")			echo -e "\t-Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
+		"-8")			echo -e "\t- Le paramètre de fin ne peut pas étre inférieur au paramètre de debut";
 			;;
-		"-9")			echo -e "\t-Le site demandé nécessite des paramétres de page";
+		"-9")			echo -e "\t- Le site demandé nécessite des paramétres de page";
 			;;
-		"-10")			echo -e "\t-Il n'y a aucune donnée à fusionner...\n\tUtilisez l'option : -e";
+		"-10")			echo -e "\t- Il n'y a aucune donnée à fusionner...\n\t  Utilisez l'option : -e";
 			;;
-		"-11")			echo -e "\t-Il n'y a aucune donnée à extraire...\n\tUtilisez l'option : -d";
+		"-11")			echo -e "\t- Il n'y a aucune donnée à extraire...\n\t  Utilisez l'option : -d";
 			;;
-		"-12")			echo -e "\t-Vous ne pouvez pas extraire car vous n'avez pas de campagne\n\tUtilisez l'option : -a";
+		"-12")			echo -e "\t- Vous ne pouvez pas extraire car vous n'avez pas de campagne\n\t  Utilisez l'option : -a";
 			;;
-		"-13")			echo -e "\t-Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\n\tUtilisez l'option : -i";
+		"-13")			echo -e "\t- Vous ne pouvez pas télécharger car vous n'avez pas initialisé le programme\n\t  Utilisez l'option : -i";
 			;;
-		"-14")			echo -e "\t-Vous ne pouvez pas télécharger car vous n'avez pas de campagne\n\tUtilisez l'option : -a";
+		"-14")			echo -e "\t- Vous ne pouvez pas télécharger car vous n'avez pas de campagne\n\t  Utilisez l'option : -a";
 			;;
-		"-15")			echo -e "\t-Option invalide -- \n\tSaisissez « prenoms --help » pour plus d'informations.";
+		"-15")			echo -e "\t- Option invalide -- \n\t  Saisissez « prenoms --help » pour plus d'informations.";
 			;;
-		"$INIT_ERROR")	echo -e "\t-Vous n'avez pas initialisé le programme...\n\tUtiliser l'option : -i";
+		"$INIT_ERROR")	echo -e "\t- Vous n'avez pas initialisé le programme...\n\t  Utiliser l'option : -i";
 			;;
-		"$ARGS_ERROR")	echo -e "\t-Nombre d'argument invalide...\n\tUtilisez --help pour plus d'informations";
+		"$ARGS_ERROR")	echo -e "\t- Nombre d'argument invalide...\n\t  Utilisez --help pour plus d'informations";
 			;;
 		*)				echo "Invalid value : [$line]" >&2;
 						exit;
@@ -428,13 +419,10 @@ function printErrors() {
 #===============================================================================
 
 function addCampaign() {
-
 	if [[ $# -ne 5 ]]; then
 		echo "[ANOMALY] invalid argument number in addCampaign()" >&2;
 		exit;
 	fi
-
-
 	# [1] Section critique, elle verrouille le traitement des sites non gérés (autre que 1 et 4).
 	# En cas d'ajout d'un nouveau site elle doit être modifiée.
 	if [ ! "$1" = "1" ] && [ ! "$1" = "4" ]; then
@@ -443,10 +431,7 @@ function addCampaign() {
 	# [1]
 
 	string="";
-	for (( i = 1; i <= $#; i++ )); do
-		string+=" ${!i}";
-	done
-
+	for (( i = 1; i <= $#; i++ )); do string+=" ${!i}"; done
 	echo "$string" >> $CAMPAINGN_FILE;
 }
 
@@ -460,7 +445,6 @@ function addCampaign() {
 #===============================================================================
 
 function deleteCampaign() {
-
 	if [[ $# -ne 0 ]]; then
 		echo "[ANOMALY] invalid argument number in deleteCampaign()" >&2;
 		exit;
@@ -495,7 +479,6 @@ function deleteCampaign() {
 #===============================================================================
 
 function download() {
-
 	if [[ $# -ne 2 ]]; then
 		echo "[ANOMALY] invalid argument number in download()" >&2;
 		exit;
@@ -506,7 +489,7 @@ function download() {
 	if [[ ! -d "$DOWNLOAD_REP/" ]]; then
 		mkdir "$DOWNLOAD_REP";
 	elif [[ -e "$file_path" ]]; then
-		echo "1";
+		echo 1;
 		return;
 	fi
 
@@ -531,16 +514,12 @@ function download() {
 #===============================================================================
 
 function reformatURL() {
-
 	if [[ $# -ne 4 ]]; then
 		echo "[ANOMALY] invalide argument number in reformatURL()" >&2;
 		exit;
 	fi
 
-	url=$1;
-	letter=$2;
-	gender=$3;
-	page=$4;
+	url=$1; letter=$2; gender=$3; page=$4;
 
 	url="${url//%letter%/$letter}";
 	url="${url//%gender%/$gender}";
@@ -559,7 +538,6 @@ function reformatURL() {
 #===============================================================================
 
 function getFileNameAndURL() {
-
 	if [[ $# -ne 4 ]]; then
 		echo "[ANOMALY] invalid argument number in getFileNameAndURL()" >&2;
 		exit;
@@ -570,10 +548,7 @@ function getFileNameAndURL() {
 		exit;
 	fi
 
-	site=$1;
-	letter=$2;
-	gender=$3;
-	page=$4;
+	site=$1; letter=$2; gender=$3; page=$4;
 
 	url=$(sed -n "$site"'p' "$WEB_SITES_FILE");
 	mod=$(sed -n "$site"'p' "$MOD_SITES_FILE");
@@ -629,7 +604,6 @@ function getFileNameAndURL() {
 #===============================================================================
 
 function downloadSite() {
-
 	if [[ $# -ne 5 ]]; then
 		echo "[ANOMALY] invalid argument number in downloadSite()" >&2;
 		exit;
@@ -640,11 +614,7 @@ function downloadSite() {
 		return;	
 	fi
 
-	site=$1;
-	letter=$2;
-	gender=$3;
-	debut=$4;
-	fin=$5;
+	site=$1; letter=$2; gender=$3; debut=$4; fin=$5;
 
 	if [[ $(sed -n "$site"'p' "$MOD_SITES_FILE" | awk {'print $3'}) = "-" ]]; then
 		debut=1;
@@ -676,7 +646,6 @@ function downloadSite() {
 #===============================================================================
 
 function extractAujourdhui() {
-
 	if [[ $# -ne 1 ]]; then
 		echo "[ANOMALY] invalid argument number in extractAujourdhui()" >&2;
 		exit;
@@ -684,19 +653,13 @@ function extractAujourdhui() {
 
 	tmp=$(sed -n '/<table class="defaultText" width="400" border="0" cellpadding="4" style="margin-left:10px;">/,/<\/table>/p' $1);
 	tmp=$(echo "$tmp" | sed -e 's/<td valign="top">/<td>/g');
-	
 	tmp=$(getHTMLChlid "$tmp" "tr");
-
 	# Récupération du contenue du tableau et nettoyage des éléments inutiles.
 	tmp=$(echo "$tmp" | sed '1,13d' | sed '/align="center"/d' | sed '/<td>/d' | sed '/<\/td>/d' | sed '/span class/d');
-
 	# Suppression de toutes les lignes vides.
 	tmp=$(echo "$tmp" | sed '/^$/d' | sed '/./!d' | sed  's/^$//g');
 
-	count=0;
-	buffer="";
-	name="";
-	gender="";
+	count=0; buffer=""; name=""; gender="";
 
 	echo "$tmp" | while read line; do   
    		
@@ -739,7 +702,6 @@ function extractAujourdhui() {
 #===============================================================================
 
 function extractPrenoms() {
-
 	if [[ $# -ne 1 ]]; then
 		echo "[ANOMALY] invalid argument number in extractPrenoms()" >&2;
 		exit;
@@ -749,10 +711,9 @@ function extractPrenoms() {
 	tmp=$(getHTMLChlid "$tmp" "li");
 
 	echo "$tmp" | while read line; do
-
-   		name="${line#*>}";
+   		
+   		name="${line#*>}"; 
    		name="${name%<*}";
-
    		echo "$name";
 	done
 }
@@ -768,14 +729,12 @@ function extractPrenoms() {
 #===============================================================================
 
 function extractPage() {
-
 	if [[ $# -ne 1 ]]; then
 		echo "[ANOMALY] invalid argument number in extractPage()" >&2;
 		exit;
 	fi
 
 	fileExtract="";
-
 	fileName="${1#*/}";
 	site=$(echo $fileName | cut -d'_' -f1);
 
@@ -788,10 +747,8 @@ function extractPage() {
 				return;
 			;;
 	esac
-
 	# Netoyage et changement des caractéres html 
 	fileExtract=$(echo "$fileExtract" | sed '/^$/d' | sed "s/&#233;/é/g" | sed "s/&#232;/è/g" | sed "s/&#235;/ë/g" | sed "s/&#239;/ï/g");
-
 	echo "$fileExtract";
 }
 
@@ -805,7 +762,6 @@ function extractPage() {
 #===============================================================================
 
 function extractAll() {
-
 	if [[ $# -ne 0 ]]; then
 		echo "[ANOMALY] invalid argument number in extractAll()" >&2;
 		exit;
@@ -853,7 +809,6 @@ function extractAll() {
 #===============================================================================
 
 function analysis() {
-
 	if [[ $# -ne 5 ]]; then
 		echo "[ANOMALY] invalid argument number in analysis()" >&2;
 		exit;
@@ -863,7 +818,6 @@ function analysis() {
 		echo $INIT_ERROR;
 		return;	
 	fi
-
 	if [ ! -d "$EXTRACT_REP" ] || [ "$(ls -A $EXTRACT_REP | wc -c)" -eq "0" ]; then
 		echo -1;
 		return;
@@ -873,15 +827,10 @@ function analysis() {
 		mkdir "$ANALYSIS_REP";
 	fi
 
-	site=$1;
-	letter=$2;
-	gender=$3;
-	debut=$4;
-	fin=$5;
+	site=$1; letter=$2; gender=$3; debut=$4; fin=$5;
 
 	if [[ "$(sed -n "$site"'p' "$MOD_SITES_FILE" | awk {'print $3'})" = "-" ]]; then
-		debut=1;
-		fin=1;
+		debut=1; fin=1;
 	fi
 
 	for (( page = $debut; page <= $fin; page++ )); do
@@ -904,9 +853,7 @@ function analysis() {
 			gMod=$(echo "$fileName" | cut -d'_' -f3);
 
 			if [[ "$gMod" = "-" ]]; then
-
 				# Pour le site prenoms.aujourdhui.com suppression du genre non désiré
-
 				if [[ "$gender" -eq "0" ]]; then
 					data=$(echo "$data" | sed "/$CODE_MAS/d");
 				elif [[ "$gender" -eq "1" ]]; then
@@ -916,9 +863,7 @@ function analysis() {
 					exit;
 				fi
 			else
-
 				# Pour le site www.prenoms.com on ajoute le genre dans la premiére colonne
-
 				if [[ "$gMod" = "0" ]]; then
 					data=$(echo "$data" | sed -e 's#^#'"${CODE_FEM}\t"'#');
 				elif [[ "$gMod" = "1" ]]; then
@@ -928,7 +873,6 @@ function analysis() {
 					exit;
 				fi
 			fi
-
 		echo -e "$data" > "$aFilePath";	
 		fi
 	done
@@ -949,7 +893,6 @@ function merge() {
 		echo $ARGS_ERROR;
 		exit;	
 	fi
-
 	if [ ! -d "$ANALYSIS_REP" ] || [ "$(ls -A $ANALYSIS_REP | wc -c)" -eq "0" ]; then
 		echo -10;
 		return;
@@ -1003,7 +946,6 @@ function main() {
 					printErrors "$camp";
 					exit;
 				fi
-
 				addCampaign $camp;
 				shift 5;
 		;;
@@ -1052,4 +994,3 @@ if [[ "$#" -lt 1 ]]; then
 fi
 
 main $*;
-
