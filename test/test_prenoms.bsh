@@ -11,5 +11,4 @@ ${pwd}prenoms.bsh -a quelprenom r boy - 5
 ${pwd}prenoms.bsh -a gic b fille 12 - 
 ${pwd}prenoms.bsh -a nai c garcon 3 - -a nai d boy - 2 
 ${pwd}prenoms.bsh -d -e -m result.txt
-${pwd}prenoms.bsh -c
 

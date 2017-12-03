@@ -136,3 +136,5 @@ if [[ ! "$(cat result.txt | wc -l)" = "247" ]]; then
 fi
 
 rm result.txt;
+
+$prog -c;
