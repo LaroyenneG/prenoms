@@ -1,0 +1,122 @@
+prog="../prenoms.bsh";
+
+: '
+http://prenoms.aujourdhui.com/guide/commencant-par-%letter%.asp
+http://www.mamanpourlavie.com/prenoms/lettre/%letter%/%gender%
+http://www.bebepassion.com/prenoms/prenom-%gender%-%letter%.htm
+https://www.prenoms.com/prenom/recherche.html?advanced=True&Genre=%gender%&start_with=%letter%&page=%page%
+http://nominis.cef.fr/contenus/prenom/alphabetique/%letter%-%page%.html
+http://www.quelprenom.com/liste_prenoms.php?code=FR&sexe%5B0%5D=%gender%&start=%letter%&page=%page%
+http://www.magicmaman.com/prenom/recherche/commencantpar=%letter%#?commencantpar=%letter%&frai&sexe=%gender%&page=%page%
+https://www.naissance.fr/prenoms/recherche?gender=%gender%&begin=%letter%&page=%page%
+'
+
+
+#=============================================
+# Test de la commande d'ajout d'une campagne
+#=============================================
+
+# Bad command
+
+$prog -c;
+$prog -i;
+
+com_error=(	"1 / boy 1 2"
+			"1 - boy 1 2"
+			"zz e girl 1 2"
+			"4 ! garcon 1 2"
+			"4 a boy - -" 
+			"4 f fille 4 3" 
+			"aujourdhui 1 boy - -" );
+
+for (( i = 0; i < ${#com_error[@]}; i++ )); do
+	if [[ "$($prog -a ${com_error[$i]})" = "" ]]; then
+		echo "Assertion error : $prog -a ${com_error[$i]} == void";
+		exit;
+	fi
+done
+
+
+if [ -e ".campaign.txt" ] && [ "$(cat .campaign.txt | wc -l)" -ne "0" ]; then
+	echo "Assertion error file .campaign.txt is not empty";
+	exit;
+fi
+
+# Good command
+
+$prog -c;
+$prog -i;
+
+com_success=(	"1 a boy - 2"
+				"1 z girl - -"
+				"mamanpourlavie e girl - -"
+				"prenoms Z garcon 1 -"
+				"4 a boy 5 -" 
+				"4 f fille 3 3" 
+				"aujourdhui Q boy - -" );
+
+for (( i = 0; i < ${#com_success[@]}; i++ )); do
+	if [[ ! "$($prog -a ${com_success[$i]})" = "" ]]; then
+		echo "Assertion error : $prog -a ${com_success[$i]} != void";
+		exit;
+	fi
+done
+
+
+if [ -e ".campaign.txt" ] && [ "$(cat .campaign.txt | wc -l)" -ne "$(expr ${#com_success[@]} - 1)" ]; then
+	echo "Assertion error size file .campaign.txt";
+	exit;
+fi
+
+#=============================================
+# Test du téléchargment
+#=============================================
+
+if [[ ! "$($prog -d)" = "" ]]; then
+	echo "Assertion error option -d != void";
+	exit;
+fi
+status_dow=$(ls -l --time-style +%s download/*);
+
+sleep 2;
+if [[ ! "$($prog -d)" = "" ]]; then
+	echo "Assertion error option -d != void";
+	exit;
+fi
+status_dow2=$(ls -l --time-style +%s download/*);
+
+if [[ ! "$status_dow" = "$status_dow" ]]; then
+	echo "Assertion error donwload rep has been change";
+	exit;
+fi
+
+#=============================================
+# Test de l'extraction
+#=============================================
+
+if [[ ! "$($prog -e)" = "" ]]; then
+	echo "Assertion error option -e != void";
+	exit;
+fi
+status_ext=$(ls -l --time-style +%s extract/*);
+
+sleep 2;
+if [[ ! "$($prog -e)" = "" ]]; then
+	echo "Assertion error option -e != void";
+	exit;
+fi
+status_ext2=$(ls -l --time-style +%s extract/*);
+
+if [[ ! "$status_ext" = "$status_ext2" ]]; then
+	echo "Assertion error extract rep has been change";
+	exit;
+fi
+
+if [[ "$(ls -l download/ | wc -l)" -ne "$(ls -l extract/ | wc -l)" ]]; then
+	echo "Assertion error files number in extract and download rep not equals";
+	exit;
+fi
+
+#=============================================
+# Test de l'analyse
+#=============================================
