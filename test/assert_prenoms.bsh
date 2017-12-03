@@ -53,7 +53,9 @@ com_success=(	"1 a boy - 2"
 				"prenoms Z garcon 1 -"
 				"4 a boy 5 -" 
 				"4 f fille 3 3" 
-				"aujourdhui Q boy - -" );
+				"4 e fille 2 4" 
+				"aujourdhui Q boy - -"
+				"aujourdhui y girl - no" );
 
 for (( i = 0; i < ${#com_success[@]}; i++ )); do
 	if [[ ! "$($prog -a ${com_success[$i]})" = "" ]]; then
@@ -120,3 +122,17 @@ fi
 #=============================================
 # Test de l'analyse
 #=============================================
+
+if [[ "$(ls -l analysis/ | wc -l)" -ne "11" ]]; then
+	echo "Assertion error invilid files number in analysis rep";
+	exit;
+fi
+
+./test_prenoms.bsh;
+
+if [[ ! "$(cat result.txt | wc -l)" = "247" ]]; then
+	echo "Assertion error result.txt has been change";
+	exit;
+fi
+
+rm result.txt;
