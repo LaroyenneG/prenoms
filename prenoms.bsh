@@ -864,9 +864,9 @@ function analysis() {
 				fi
 			else
 				# Pour le site www.prenoms.com on ajoute le genre dans la premiére colonne
-				if [[ "$gMod" = "0" ]]; then
+				if [[ "$gender" = "0" ]]; then
 					data=$(echo "$data" | sed -e 's#^#'"${CODE_FEM}\t"'#');
-				elif [[ "$gMod" = "1" ]]; then
+				elif [[ "$gender" = "1" ]]; then
 					data=$(echo "$data" | sed -e 's#^#'"${CODE_MAS}\t"'#');
 				else
 					echo "[ANOMALY] invalid extract file name" >&2;
@@ -922,10 +922,8 @@ function main() {
 
 	"--help" )	echo -e "$HELP";
 		;;
-
 	"-i") 		initialization;
 		;;
-	
 	"-d") 		if [[ ! -e "$CAMPAINGN_FILE" ]]; then
 					printErrors "-14";
 					exit;
@@ -937,10 +935,8 @@ function main() {
 					fi
 				done < $CAMPAINGN_FILE;
 		;;
-
 	"-c") 		deleteCampaign;
 		;;
-
 	"-a") 		camp=$(checkArgsCampaign $2 $3 $4 $5 $6); n="${camp:0:2}";
 				if [ "-$(isNumeric ${n#-})" = "$n" ] && [ "$n" -lt "0" ]; then
 					printErrors "$camp";
@@ -949,7 +945,6 @@ function main() {
 				addCampaign $camp;
 				shift 5;
 		;;
-
 	"-e")		
 				if [[ ! -e "$CAMPAINGN_FILE" ]]; then
 					printErrors "-12";
@@ -967,7 +962,6 @@ function main() {
 					exit;
 				fi
 		;;
-
 	"-m")		status=$(merge $2);
 				if [[ "$status" -lt "0" ]]; then
 					printErrors "$status";
@@ -975,7 +969,6 @@ function main() {
 				fi
 				shift;
 		;;
-
 	*)			printErrors "-15";
 				exit;
 		;;

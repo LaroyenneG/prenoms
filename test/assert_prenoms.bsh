@@ -130,7 +130,7 @@ fi
 
 ./test_prenoms.bsh;
 
-if [[ ! "$(cat result.txt | wc -l)" = "247" ]]; then
+if [[ ! "$(cat result.txt | wc -l)" = "250" ]]; then
 	echo "Assertion error result.txt has been change";
 	exit;
 fi
