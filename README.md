@@ -20,18 +20,19 @@ Remarque : il est inutile de vouloir converser avec l'utilisateur, il n'y aura p
 Commande 
 prenom option* 
 Option : 
-        -i         Initialisation 
-        -c         Effacement de la campagne précédente. 
-        -a site lettre genre debut fin         Ajout d’une nouvelle règle dans la campagne.  
+        -i					Initialisation 
+        -c					Effacement de la campagne précédente. 
+        -a site lettre genre debut fin		Ajout d’une nouvelle règle dans la campagne.  
 1. Téléchargement des fichiers décrits par toutes les règles de la campagne 
 2. Extraction des prénoms et filtrages éventuels de tous les téléchargements 
 -m fichier        Fusion de tous les prénoms découverts par la campagne en un seul fichier résultat dénommé fichier à la racine du répertoire courant.
 Quand j’écris option* cela signifie que je peux écrire une ou plusieurs options sur la même ligne. Ainsi, je peux écrire deux commandes unix (gauche) ou juste une seule (droite), voire l'exemple en fin de sujet.
 
 
-prenom –i prenom –c 
-prenom –m toto
-	prenom –i -c –m toto
+prenom -i 
+prenom -c 
+prenom -m toto
+prenom -i -c -m toto
 	
 
 Détails concernant l’initialisation 
