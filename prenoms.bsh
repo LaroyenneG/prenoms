@@ -396,6 +396,8 @@ function printErrors() {
 			;;
 		"-15")			echo -e "\t- Option invalide -- \n\t  Saisissez « prenoms --help » pour plus d'informations.";
 			;;
+		"-16")			echo -e "\t- Des fichiers manquent dans le répertoire de téléchargement.\n\t  Probablement car vous ne les avez pas téléchargés.\n\t  Utiliser l'option -d pour résoudre le problème.";
+			;;
 		"$INIT_ERROR")	echo -e "\t- Vous n'avez pas initialisé le programme...\n\t  Utiliser l'option : -i";
 			;;
 		"$ARGS_ERROR")	echo -e "\t- Nombre d'argument invalide...\n\t  Utilisez --help pour plus d'informations";
@@ -841,8 +843,8 @@ function analysis() {
 
 		# Protection pour le développeur
 		if [[ ! -e "$eFilePath" ]]; then
-			echo "[ANOMALY] File $fileName not exist" >&2;
-			exit;
+			echo -16;
+			return;
 		fi
 
 		aFilePath="$ANALYSIS_REP/${site}_${letter}_${gender}_${page}${analysis_EXT}";
@@ -951,12 +953,20 @@ function main() {
 					exit;
 				fi
 				if [[ "$(extractAll)" -ne "-1" ]]; then
+					errors="";
 					while read camp; do
-						if [[ "$(analysis $camp)" -lt "0" ]]; then
-					 		echo -e "[ANOMALY] unable to run the analysis if the extractions data is not available.";
-					 		exit;
+						status=$(analysis $camp);
+						if [[ "$status" -lt "0" ]]; then
+							if [ "$status" -eq "-1" ] || [ "$status" -eq "$INIT_ERROR" ]; then
+								echo -e "[ANOMALY] unable to run the analysis if the extractions data is not available.";
+					 			exit;
+							fi
+							errors=$status;
 						fi
 					done < $CAMPAINGN_FILE;
+					if [[ ! "$errors" = "" ]]; then
+						printErrors "$errors";
+					fi
 				else
 					printErrors "-11";
 					exit;
