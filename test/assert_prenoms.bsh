@@ -138,3 +138,6 @@ fi
 rm result.txt;
 
 $prog -c;
+
+rm .site.txt
+rm .mod.txt
