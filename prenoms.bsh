@@ -200,7 +200,7 @@ function getAllSiteName() {
 		exit;
 	fi
 
-	if [[ ! -e "$WEB_SITES_FILE" ]]; then
+	if [[ ! -f "$WEB_SITES_FILE" ]]; then
 		return;
 	fi
 
@@ -236,7 +236,7 @@ function checkArgsCampaign() {
 
 	listNameSite=$(getAllSiteName);
 
-	if [ "$listNameSite" = "" ] || [ ! -e "$MOD_SITES_FILE" ]; then
+	if [ "$listNameSite" = "" ] || [ ! -f "$MOD_SITES_FILE" ]; then
 		echo $INIT_ERROR;
 		return;	
 	fi
@@ -452,7 +452,7 @@ function deleteCampaign() {
 		exit;
 	fi
 
-	if [[ -e "$CAMPAINGN_FILE" ]]; then
+	if [[ -f "$CAMPAINGN_FILE" ]]; then
 		rm -f "$CAMPAINGN_FILE";
 	fi
 
@@ -490,14 +490,14 @@ function download() {
 
 	if [[ ! -d "$DOWNLOAD_REP/" ]]; then
 		mkdir "$DOWNLOAD_REP";
-	elif [[ -e "$file_path" ]]; then
+	elif [[ -f "$file_path" ]]; then
 		echo 1;
 		return;
 	fi
 
 	curl -o "$file_path" "$1" 2>/dev/null;
 
-	if [[ ! -e "$file_path" ]]; then
+	if [[ ! -f "$file_path" ]]; then
 		echo -1;
 		return;
 	fi
@@ -545,7 +545,7 @@ function getFileNameAndURL() {
 		exit;
 	fi
 
-	if [[ ! -e "$WEB_SITES_FILE" ]]; then
+	if [[ ! -f "$WEB_SITES_FILE" ]]; then
 		echo "[ANOMALY] initialization error" >&2;
 		exit;
 	fi
@@ -611,7 +611,7 @@ function downloadSite() {
 		exit;
 	fi
 
-	if [[ ! -e "$WEB_SITES_FILE" ]]; then
+	if [[ ! -f "$WEB_SITES_FILE" ]]; then
 		echo $INIT_ERROR;
 		return;	
 	fi
@@ -784,7 +784,7 @@ function extractAll() {
 		eFileName="${eFileName#*/}";
 		eFileName+="$EXTRACT_EXT";
 
-		if [[ ! -e "$EXTRACT_REP/$eFileName" ]]; then
+		if [[ ! -f "$EXTRACT_REP/$eFileName" ]]; then
 
 			data=$(extractPage $filePath);
 
@@ -816,7 +816,7 @@ function analysis() {
 		exit;
 	fi
 
-	if [[ ! -e "$WEB_SITES_FILE" ]]; then
+	if [[ ! -f "$WEB_SITES_FILE" ]]; then
 		echo $INIT_ERROR;
 		return;	
 	fi
@@ -842,14 +842,14 @@ function analysis() {
 		eFilePath="$EXTRACT_REP/${fileName}$EXTRACT_EXT";
 
 		# Protection pour le développeur
-		if [[ ! -e "$eFilePath" ]]; then
+		if [[ ! -f "$eFilePath" ]]; then
 			echo -16;
 			return;
 		fi
 
 		aFilePath="$ANALYSIS_REP/${site}_${letter}_${gender}_${page}${analysis_EXT}";
 
-		if [[ ! -e "$aFilePath" ]]; then
+		if [[ ! -f "$aFilePath" ]]; then
 
 			data=$(cat "$eFilePath");
 			gMod=$(echo "$fileName" | cut -d'_' -f3);
@@ -926,7 +926,7 @@ function main() {
 		;;
 	"-i") 		initialization;
 		;;
-	"-d") 		if [[ ! -e "$CAMPAINGN_FILE" ]]; then
+	"-d") 		if [[ ! -f "$CAMPAINGN_FILE" ]]; then
 					printErrors "-14";
 					exit;
 				fi
@@ -948,7 +948,7 @@ function main() {
 				shift 5;
 		;;
 	"-e")		
-				if [[ ! -e "$CAMPAINGN_FILE" ]]; then
+				if [[ ! -f "$CAMPAINGN_FILE" ]]; then
 					printErrors "-12";
 					exit;
 				fi
